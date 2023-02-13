@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find kkrt_lidar_pkg)/launch/lidars.launch"/>
+  <include file="$(find ros_imu_bno055)/launch/imu_test.launch"/>
+
+  <include file="$(find my_cartographer)/launch/backpack_3d.launch"/>
+  
+  <!--include file="$(find twist_to_targets_pkg)/launch/twist_to_targets.launch"/-->
+  
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-f base_link -d $(find kait_robot)/utils/rviz.rviz"/>
+
+</launch>

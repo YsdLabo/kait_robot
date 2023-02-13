@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+  <remap from="cmd_vel" to="kait_robot/cmd_vel"/>
+  <include file="$(find ds4_driver)/launch/ds4_twist.launch"/>
+
+  <node pkg="twist_to_targets_pkg" type="twist_to_targets_node" name="twist_to_targets" output="screen"/>
+
+  <include file="$(find motor_control_pkg)/launch/motor_controller.launch"/>
+
+</launch>

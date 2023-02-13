@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="joy" type="joy_node" name="joy"/>
+    <node pkg="ds4_control_pkg" type="ds4_wired_twist_publisher_node" name="dsr_wired" output="screen"/>
+</launch>

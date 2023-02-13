@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+  <!--include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch"-->
+  <include file="$(find kkrt_lidar_pkg)/launch/VLP16_points.launch">
+    <arg name="frame_id" value="laserscan_velodyne"/>
+    <arg name="device_ip" value="192.168.2.201"/>
+  </include>
+  
+  <!--include file="$(find laserscan_to_pointcloud)/launch/laserscan_to_pointcloud_assembler.launch"/-->
+  <!--include file="$(find laserscan_to_pointcloud)/launch/nodelet.launch"/-->
+  
+  <node pkg="urg_node" type="urg_node" name="ethertop_front">
+    <remap from="scan" to="scan_front"/>
+    <param name="frame_id" value="ethertop_front"/>
+    <param name="ip_address" value="192.168.2.202"/>
+  </node>
+  
+  <node pkg="urg_node" type="urg_node" name="ethertop_back">
+    <remap from="scan" to="scan_rear"/>
+    <param name="frame_id" value="ethertop_rear"/>
+    <param name="ip_address" value="192.168.2.203"/>
+  </node>
+  
+</launch>

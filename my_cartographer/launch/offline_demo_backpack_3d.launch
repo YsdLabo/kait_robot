@@ -1,0 +1,56 @@
+<!--
+  Copyright 2016 The Cartographer Authors
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<launch>
+  <param name="/use_sim_time" value="true" />
+
+  <!--param name="robot_description" command="xacro inorder '$(find ds4_control_pkg)/description/urdf/kait_robot.urdf.xacro'" /-->
+  <param name="robot_description" command="xacro --inorder '$(find cartographer_ros)/urdf/backpack_3d.urdf'" />
+  
+  <!--param name="robot_description" command="xacro '$(find description)/urdf/kait_robot.urdf.xacro'" /-->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <node name="rviz" pkg="rviz" type="rviz" required="true"
+      args="-d $(find cartographer_ros)/configuration_files/demo_3d.rviz" />
+  <!--node name="rviz" pkg="rviz" type="rviz" required="true"
+      args="-d $(find ros_imu_bno055)/utils/my_view_imu_rviz.rviz" /-->
+
+  <!--node name="cartographer_offline_node" pkg="cartographer_ros"
+      type="cartographer_offline_node" args="
+          -configuration_directory $(find my_cartographer)/config
+          -configuration_basenames backpack_3d.lua
+          -urdf_filenames $(find description)/urdf/kait_robot.urdf
+          -bag_filenames $(arg bag_filenames)"
+      output="screen"-->
+  <node name="cartographer_offline_node" pkg="cartographer_ros"
+      type="cartographer_offline_node" args="
+          -configuration_directory $(find my_cartographer)/config
+          -configuration_basenames backpack_demo_3d.lua
+          -urdf_filenames $(find cartographer_ros)/urdf/backpack_3d.urdf
+          -bag_filenames $(find kait_robot)/bag/b3-2016-02-02-13-32-01.bag"
+      output="screen">
+      <!---bag_filenames $(arg kait_robot_bag)/dst_file.bag"-->
+     <remap from="points2_1" to="horizontal_laser_3d"/>
+     <remap from="points2_2" to="vertical_laser_3d"/>
+    <!--remap from="points2" to="velodyne_scan" />
+    <remap from="scan" to="scan_front"/>
+    <remap from="scan_2" to="scan_rear"/>
+    <remap from="imu" to="/bno055_1/imu/data_raw"/-->
+  </node>
+
+  <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
+      type="cartographer_occupancy_grid_node" args="-resolution 0.05" />
+</launch>

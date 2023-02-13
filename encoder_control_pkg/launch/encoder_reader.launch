@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="rosserial_python" type="serial_node.py" name="encoder_counter">
+    <param name="port" value="/dev/mbed"/>
+    <param name="baud" value="115200"/>
+  </node>
+
+  <node pkg="encoder_control_pkg" type="encoder_reader_node" name="encoder_reader" output="screen"/>
+</launch>

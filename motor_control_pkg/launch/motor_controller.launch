@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find encoder_control_pkg)/launch/encoder_reader.launch"/>
+
+  <node pkg="motor_control_pkg" type="motor_control_node" name="motor_controller" output="screen">
+    <rosparam command="load" file="$(find motor_control_pkg)/config/pid_param.yaml"/>
+  </node>
+</launch>
+

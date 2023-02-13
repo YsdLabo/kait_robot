@@ -1,0 +1,40 @@
+pid_param:
+  - number: 1
+    Kp: 15000.0
+    Ki: 0.0
+    Kd: 50.0
+  - number: 2
+    Kp: 28.0
+    Ki: 0.0
+    Kd: 0.001
+  - number: 3
+    Kp: 21000.0
+    Ki: 0.0
+    Kd: 50.0
+  - number: 4
+    Kp: 50.0
+#    Kp: 28.0
+    Ki: 0.0
+    Kd: 0.001
+  - number: 5
+    Kp: 15000.0
+    Ki: 0.0
+    Kd: 50.0
+  - number: 6
+    Kp: 18.0
+    Ki: 0.0
+    Kd: 0.001
+  - number: 7
+    Kp: 15000.0
+    Ki: 0.0
+    Kd: 50.0
+  - number: 8
+    Kp: 20.0
+    Ki: 0.0
+    Kd: 0.001
+#    Kp: 10.0
+#    Ki: 0.0
+#    Kd: 0.001
+wheel_radius: 0.05
+wheel_offset: 0.05
+ticks_per_rotate: 4000
