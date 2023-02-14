@@ -207,10 +207,12 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_library(${PROJECT_NAME}
+add_library(
+  nodelet_driving_controller
   src/twist_to_driving.cpp
 )
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(
+  nodelet_driving_controller
   ${catkin_LIBRARIES}
 )
 
