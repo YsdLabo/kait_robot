@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /PointCloud21
       Splitter Ratio: 0.5
     Tree Height: 728
   - Class: rviz/Selection
@@ -151,7 +152,7 @@ Visualization Manager:
       Class: rviz/PointCloud2
       Color: 255; 255; 255
       Color Transformer: Intensity
-      Decay Time: 0
+      Decay Time: 0.10000000149011612
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -163,7 +164,7 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.009999999776482582
       Style: Flat Squares
-      Topic: /scan_matched_points2
+      Topic: /velodyne_scan
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -252,25 +253,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.229646682739258
+      Distance: 8.970010757446289
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.809605062007904
-        Y: -1.288085699081421
-        Z: 1.4832923412322998
+        X: -0.9663562178611755
+        Y: 0.18506968021392822
+        Z: 1.5742638111114502
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6547972559928894
+      Pitch: 0.7547971606254578
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.7935712337493896
+      Yaw: 3.3985702991485596
     Saved: ~
 Window Geometry:
   Displays:
