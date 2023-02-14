@@ -4,7 +4,9 @@
   <include file="$(find ros_imu_bno055)/launch/imu_test.launch"/>
 
   <include file="$(find kait_robot)/launch/kait_description.launch"/>
-  <include file="$(find my_cartographer)/launch/manual_3d.launch"/>
+  <include file="$(find my_cartographer)/launch/remote_3d.launch"/>
+  
+  <include file="$(find twist_to_targets_pkg)/launch/twist_to_targets.launch"/>
   
   <node pkg="rviz" type="rviz" name="rviz" required="true" args="-f base_link -d $(find kait_robot)/utils/rviz.rviz"/>
 

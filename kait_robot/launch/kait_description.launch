@@ -1,8 +1,5 @@
+<?xml version="1.0"?>
 <launch>
-  <!--param name="/use_sim_time" value="true" /-->
-
-  <param name="robot_description" command="xacro --inorder '$(find ds4_control_pkg)/description/urdf/kait_robot.urdf'" />
-  
-  <!--param name="robot_description" command="xacro '$(find description)/urdf/kait_robot.urdf.xacro'" /-->
+  <param name="robot_description" command="xacro --inorder '$(find description)/urdf/kait_robot.urdf.xacro'" />
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 </launch>
