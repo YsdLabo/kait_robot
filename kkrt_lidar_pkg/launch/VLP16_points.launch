@@ -19,7 +19,15 @@
   <arg name="cut_angle" default="-0.01" />
   <arg name="laserscan_ring" default="-1" />
   <arg name="laserscan_resolution" default="0.007" />
-  <param name="/$(arg manager)_driver/npackets" value="1" />
+  <param name="/$(arg manager)_driver/npackets" value="30" />  <!-- default: npackets=76 in dual mode-->
+  <!--npackets=none : freq.=19.83Hz dual-->
+  <!--npackets=none : freq.=9.91Hz bw=8.4MB/s mean:0.84MB strongest-->
+  <!--npackets=152: freq.=0.91Hz-->
+  <!--npackets=100: freq.=15.07Hz-->
+  <!--npackets=76 : freq.=19.83Hz bw=16.7MB/s mean:0.84MB-->
+  <!--npackets=50 : freq.=30.14Hz bw=16.7MB/s mean:0.55MB-->
+  <!--npackets=30 : freq.=50.23Hz bw=16.7MB/s mean:0.33MB-->
+  <!--npackets= 1 : freq.=xxxxxHz bw=17MB/s mean:0.1MB-->
 
   <!-- start nodelet manager and driver nodelets -->
   <include file="$(find velodyne_driver)/launch/nodelet_manager.launch">

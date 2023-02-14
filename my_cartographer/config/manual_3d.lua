@@ -53,7 +53,7 @@ MAP_BUILDER.num_background_threads = 7 --7
 --TRAJECTORY BUILDER 3D MAIN SETTING
 TRAJECTORY_BUILDER_3D.min_range = 2.0--最少計測径
 TRAJECTORY_BUILDER_3D.max_range = 30.0  --最大計測径
-TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 80 --76or80=strongest 160=dual大切 --追記
+TRAJECTORY_BUILDER_3D.num_accumulated_range_data = 20 --76or80=strongest 160=dual大切 --追記
 TRAJECTORY_BUILDER_3D.voxel_filter_size = 0.05 --0.04--12/01　voxel_filter_size<submaps.higt_resolution
 --TRAJECTORY_BUILDER_3D.imu_gravity_time_constant = 9.81
 --TRAJECTORY_BUILDER_3D.num_odometry_states = 1

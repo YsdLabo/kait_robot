@@ -16,7 +16,7 @@
 	<joint name="velodyne_joint" type="fixed">
 		<parent link="base_link"/>
 		<child link="laserscan_velodyne"/>
-		<origin xyz="0 0 0.4505" rpy="0 0 0"/>
+		<origin xyz="0 0 0.4505" rpy="0 ${radians(-30)} 0"/>
 		<!--0=0,30=-0.52359877,40=-0.69813170,45=-0.78539816,
 		50=-0.87266462,60=-1.04719755,70=1.22173047,80=1.39626340,90=-1.57079632-->
 	</joint>
