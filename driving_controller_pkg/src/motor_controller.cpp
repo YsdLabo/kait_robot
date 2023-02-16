@@ -9,6 +9,7 @@ class MotorController
 {
 private:
   ros::NodeHandle nh;
+  ros::Subscriber sub_course;
   
   int steering_angle[5][] = {
     {0, 0, 0, 0},  // course F 0[deg], B 180[deg], stop
@@ -18,33 +19,70 @@ private:
     {-45, 45, -45, 45},  // rotation L, R
   };
   
-public:
-  void init()
+  void callback(const std_msgs::Int32& msg)
   {
+    msg->state;
+    course_next = msg->course;
+    msg->speed;
   }
   
-  void steer(int course)
+  void timer_callback()
   {
-    switch(course) {
-      case 0:
+    switch(state)
+    {
+      case 0: // 停止
         for(int i=0;i<4;i++) {
-          servo[i].move(steering_angle[course][i]);   // 絶対角
-          ultra[i].move(steering_angle[course][i+4]); // 相対角
+          servo[i].stop();
+          ultra[i].stop();
         }
         break;
-      case 45:
+      case 1: // 操舵
+        for(int i=0;i<4;i++) {
+          servo[i].move(steering_angle[course][i]);   // 絶対角
+          ultra[i].move(steering_angle[course][i]); // 相対角
+        }
+        break;
+      case 2: // 走行
+        for(int i=0;i<4;i++) {
+          servo[i].stop();
+          ultra[i].run(speed);
+        }
         break;
     }
   }
   
-  void move(int course, double speed)
+  bool stopService(driving_controller_pkg::check_stop::Request& req, driving_controller_pkg::check_stop::Response& res)
   {
+  }
+  
+public:
+  void onInit()
+  {
+    nh = getNodeHandle();
+    
+    sub_course = nh.subscribe("~", &MotorController::callback, this);
+    timer = ros::createTimer(ros::Duration(0.01), &MotorController::timer_callback, this);
+  }
+  
+  void steer(int course_next)
+  {
+    // 目標値計算
+    // 
+    // スタート
+    state = 1;
+  }
+  
+  void move(int course_next, double speed)
+  {
+    
+    state = 2;
   }
   
   void stop()
   {
   }
   
+  // サービスで駆動
   bool check_stopped_motors()
   {
   }
