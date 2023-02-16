@@ -186,7 +186,7 @@ private:
 	{
 		motor_controller.steer(static_cast<double>(steering_dir_now));
 	}
-	void start_steering()
+	void start_running()
 	{
 		motor_controller.move(static_cast<double>(steering_dir_now), speed);
 	}
@@ -241,7 +241,7 @@ private:
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			start_running(static_cast<double>(steering_dir_now), speed);
+			start_running();
 			if(course_changed()) {
 				main_state = E_STATE::STOPPING;
 				action = E_ACTION::EXIT;
