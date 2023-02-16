@@ -7,7 +7,7 @@
 namespace driving_controller
 {
 
-class TwistToDriving : public nodelet::Nodelet
+class RobotDrivingWithTwist : public nodelet::Nodelet
 {
 private:
 	ros::NodeHandle nh;
@@ -273,3 +273,4 @@ private:
 };
 
 }
+PLUGINLIB_EXPORT_CLASS(driving_controller::RobotDrivingWithTwist, nodelet::Nodelet);
