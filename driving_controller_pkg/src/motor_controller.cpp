@@ -1,4 +1,9 @@
 #include <ros/ros.h>
+#include <nodelet/nodelet.h>
+#include <pluginlib.h>
+
+namespace driving_controller
+{
 
 class MotorController
 {
@@ -44,3 +49,5 @@ public:
   {
   }
 };
+  
+}
