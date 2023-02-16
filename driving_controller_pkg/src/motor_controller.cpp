@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 #include <nodelet/nodelet.h>
-#include <pluginlib.h>
+#include <pluginlib/class_list_macros.h>
 
 namespace driving_controller
 {
@@ -51,3 +51,4 @@ public:
 };
   
 }
+PLUGINLIB_EXPORT_CLASS(driving_controller::MotorController, nodelet::Nodelet);
