@@ -7,7 +7,7 @@
 namespace driving_controller
 {
 
-class RobotDrivingWithTwist : public nodelet::Nodelet
+class RobotControllerWithTwist : public nodelet::Nodelet
 {
 private:
 	ros::NodeHandle nh;
@@ -58,9 +58,9 @@ public:
 		pnh.param("max_speed", max_speed, "1.0");
 		pnh.param("frequency", frequency, "50");
 		
-		sub_cmd_vel = nh.subscribe("~cmd_vel", 10, &TwistToDriving::cmd_vel_callback, this);
+		sub_cmd_vel = nh.subscribe("~cmd_vel", 10, &RobotControllerWithTwist::cmd_vel_callback, this);
 		pub_driving_direction = nh.advertise<std_msgs::Int32>("driving_direction", 1);
-		stm_timer = nh.createTimer(ros::Duration(1.0/frequency), &TwistToDriving::stm_callback, this);
+		stm_timer = nh.createTimer(ros::Duration(1.0/frequency), &RobotControllerWithTwist::stm_callback, this);
 	}
 	
 private:
@@ -185,14 +185,17 @@ private:
 	void start_steering()
 	{
 		motor_controller.steer(static_cast<double>(steering_dir_now));
+		// publish drive_state, course, speed
 	}
 	void start_running()
 	{
 		motor_controller.move(static_cast<double>(steering_dir_now), speed);
+		// publish drive_state, course, speed
 	}
 	void stop_steering()
 	{
 		motor_controller.stop();
+		// publish drive_state, course, speed
 	}
 	
 	// アイドリング中
@@ -273,4 +276,4 @@ private:
 };
 
 }
-PLUGINLIB_EXPORT_CLASS(driving_controller::RobotDrivingWithTwist, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(driving_controller::RobotControllerWithTwist, nodelet::Nodelet);
