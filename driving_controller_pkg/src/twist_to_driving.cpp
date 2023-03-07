@@ -21,7 +21,7 @@ private:
 	ros::Timer stm_timer;
 	
 	// Service(Client)
-	ros::ServiceClient clientSendState;
+	ros::ServiceClient clientSendDriving;
 	ros::ServiceClient clientRecvState;
 	driving_controller_pkg::DrivingState driving_state;
 	
@@ -70,7 +70,7 @@ public:
 		pub_driving_direction = nh.advertise<std_msgs::Int32>("driving_direction", 1);
 		stm_timer = nh.createTimer(ros::Duration(1.0/frequency), &TwistToDriving::stm_callback, this);
 		
-		clientSendState = nh.serviceClient<driving_controller_pkg::DrivingState>("SendState");
+		clientSendDriving = nh.serviceClient<driving_controller_pkg::DrivingState>("SendDriving");
 		clientRecvState = nh.serviceClient<std_srvs::Empty>("RecvState");
 		driving_state.request.state = static_cast<int>(E_STATE::NONE);
 	}
@@ -196,15 +196,24 @@ private:
 	}
 	void start_steering()
 	{
-		motor_controller.steer(static_cast<double>(steering_dir_now));
+		driving_state.request.state = static_cast<int>(steering_dir_now);
+		driving_state.request.speed = 0;
+		clientSendState.call(driving_state);
+		//motor_controller.steer(static_cast<double>(steering_dir_now));
 	}
-	void start_steering()
+	void start_running()
 	{
-		motor_controller.move(static_cast<double>(steering_dir_now), speed);
+		driving_state.request.state = static_cast<int>(steering_dir_now);
+		driving_state.request.speed = speed;
+		clientSendState.call(driving_state);
+		//motor_controller.move(static_cast<double>(steering_dir_now), speed);
 	}
-	void stop_steering()
+	void stop_running()
 	{
-		motor_controller.stop();
+		driving_state.request.state = static_cast<int>(steering_dir_now);
+		driving_state.request.speed = 0;
+		clientSendState.call(driving_state);
+		//motor_controller.stop();
 	}
 	
 	// アイドリング中
@@ -253,7 +262,7 @@ private:
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			start_running(static_cast<double>(steering_dir_now), speed);
+			start_running();
 			if(course_changed()) {
 				main_state = E_STATE::STOPPING;
 				action = E_ACTION::EXIT;
