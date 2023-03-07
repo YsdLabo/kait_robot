@@ -4,6 +4,9 @@
 #include<geometry_msgs/Twist.h>
 #include<std_msgs/Int32.h>
 
+#include<driving_controller_pkg/DrivingState.h>
+#include<std_srvs/Empty.h>
+
 namespace driving_controller
 {
 
@@ -16,6 +19,11 @@ private:
 	ros::Subscriber sub_cmd_vel;
 	ros::Publisher  pub_driving_direction;
 	ros::Timer stm_timer;
+	
+	// Service(Client)
+	ros::ServiceClient clientSendState;
+	ros::ServiceClient clientRecvState;
+	driving_controller_pkg::DrivingState driving_state;
 	
 	// Parameter
 	double max_speed;
@@ -61,6 +69,10 @@ public:
 		sub_cmd_vel = nh.subscribe("~cmd_vel", 10, &TwistToDriving::cmd_vel_callback, this);
 		pub_driving_direction = nh.advertise<std_msgs::Int32>("driving_direction", 1);
 		stm_timer = nh.createTimer(ros::Duration(1.0/frequency), &TwistToDriving::stm_callback, this);
+		
+		clientSendState = nh.serviceClient<driving_controller_pkg::DrivingState>("SendState");
+		clientRecvState = nh.serviceClient<std_srvs::Empty>("RecvState");
+		driving_state.request.state = static_cast<int>(E_STATE::NONE);
 	}
 	
 private:
