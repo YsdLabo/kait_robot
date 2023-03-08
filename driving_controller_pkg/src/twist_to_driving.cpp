@@ -179,7 +179,7 @@ private:
 	}
 	bool rotation_is_zero()
 	{
-		return (rotation < 0.1);
+		return (rotation < 0.5);
 	}
 	void store_current_steering_dir()
 	{
@@ -192,27 +192,29 @@ private:
 	
 	bool check_all_motors_stopped()
 	{
-		return motor_controller.check_stopped_motors();
+		std_srvs::Empty emp;
+		return clientRecvState.call(emp);
+		//return motor_controller.check_stopped_motors();
 	}
 	void start_steering()
 	{
 		driving_state.request.state = static_cast<int>(steering_dir_now);
 		driving_state.request.speed = 0;
-		clientSendState.call(driving_state);
+		clientSendDriving.call(driving_state);
 		//motor_controller.steer(static_cast<double>(steering_dir_now));
 	}
 	void start_running()
 	{
 		driving_state.request.state = static_cast<int>(steering_dir_now);
 		driving_state.request.speed = speed;
-		clientSendState.call(driving_state);
+		clientSendDriving.call(driving_state);
 		//motor_controller.move(static_cast<double>(steering_dir_now), speed);
 	}
 	void stop_running()
 	{
 		driving_state.request.state = static_cast<int>(steering_dir_now);
 		driving_state.request.speed = 0;
-		clientSendState.call(driving_state);
+		clientSendDriving.call(driving_state);
 		//motor_controller.stop();
 	}
 	
