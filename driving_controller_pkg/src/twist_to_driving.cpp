@@ -21,8 +21,8 @@ private:
 	ros::Timer stm_timer;
 	
 	// Service(Client)
-	ros::ServiceClient clientSendDriving;
-	ros::ServiceClient clientRecvState;
+	ros::ServiceClient clientDrivingState;
+	ros::ServiceClient clientStoppedState;
 	driving_controller_pkg::DrivingState driving_state;
 	
 	// Parameter
@@ -70,8 +70,8 @@ public:
 		pub_driving_direction = nh.advertise<std_msgs::Int32>("driving_direction", 1);
 		stm_timer = nh.createTimer(ros::Duration(1.0/frequency), &TwistToDriving::stm_callback, this);
 		
-		clientSendDriving = nh.serviceClient<driving_controller_pkg::DrivingState>("SendDriving");
-		clientRecvState = nh.serviceClient<std_srvs::Empty>("RecvState");
+		clientDrivingState = nh.serviceClient<driving_controller_pkg::DrivingState>("DrivingState");
+		clientStoppedState = nh.serviceClient<std_srvs::Empty>("StoppedState");
 		driving_state.request.state = static_cast<int>(E_STATE::NONE);
 	}
 	
@@ -97,6 +97,7 @@ private:
 			main_state = E_STATE::IDLING;
 			action = E_ACTION::ENTRY;
 			steering_dir_now = E_STEERING::DIRECTION_STOP;
+			store_steering_dir = steering_dir_now;
 			break;
 		case E_STATE::IDLING:
 			state_idling();
@@ -193,28 +194,28 @@ private:
 	bool check_all_motors_stopped()
 	{
 		std_srvs::Empty emp;
-		return clientRecvState.call(emp);
+		return clientStoppedState.call(emp);
 		//return motor_controller.check_stopped_motors();
 	}
 	void start_steering()
 	{
 		driving_state.request.state = static_cast<int>(steering_dir_now);
 		driving_state.request.speed = 0;
-		clientSendDriving.call(driving_state);
+		clientDrivingState.call(driving_state);
 		//motor_controller.steer(static_cast<double>(steering_dir_now));
 	}
 	void start_running()
 	{
 		driving_state.request.state = static_cast<int>(steering_dir_now);
 		driving_state.request.speed = speed;
-		clientSendDriving.call(driving_state);
+		clientDrivingState.call(driving_state);
 		//motor_controller.move(static_cast<double>(steering_dir_now), speed);
 	}
 	void stop_running()
 	{
 		driving_state.request.state = static_cast<int>(steering_dir_now);
 		driving_state.request.speed = 0;
-		clientSendDriving.call(driving_state);
+		clientDrivingState.call(driving_state);
 		//motor_controller.stop();
 	}
 	
