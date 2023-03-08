@@ -45,3 +45,5 @@ namespace driving_controller_ns
   {
   }
 }
+
+PLUGINLIB_EXPORT_CLASS(driving_controller_ns::MotorController, nodelet::Nodelet)
