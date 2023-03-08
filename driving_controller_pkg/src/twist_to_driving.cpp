@@ -7,7 +7,7 @@
 #include<driving_controller_pkg/DrivingState.h>
 #include<std_srvs/Empty.h>
 
-namespace driving_controller
+namespace driving_controller_ns
 {
 
 class TwistToDriving : public nodelet::Nodelet
@@ -297,3 +297,5 @@ private:
 };
 
 }
+
+PLUGINLIB_EXPORT_CLASS(driving_controller_ns::TwistToDriving, nodelet::Nodelet)
