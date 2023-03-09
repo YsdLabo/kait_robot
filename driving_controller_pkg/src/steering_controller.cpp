@@ -14,6 +14,7 @@ class SteeringController
   int servo_angle_now[4];
   
   ICSData ics_data;
+  Piezosonic piezo[4];
   
   void drive_servo(int motor_id, int angle, int speed)
   {
