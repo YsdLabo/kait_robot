@@ -32,9 +32,10 @@ class PiezoSonic
 	void write(uint8_t _address, uint16_t value);
 
 public:
-	PiezoSonic(int _device_id);
+	PiezoSonic() {};
+	//PiezoSonic(int _device_id);
 
-	void open();
+	void open(int _device_id);
 	void close();
 	int move(int _speed);
 	void stop();
