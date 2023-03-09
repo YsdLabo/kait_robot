@@ -1,12 +1,9 @@
 #include "piezo_sonic.h"
 
-PiezoSonic::PiezoSonic(int _device_id)
+void PiezoSonic::open(int _device_id)
 {
 	id = _device_id;
-}
-
-void PiezoSonic::open()
-{
+	
 	// libusbの初期化
 	int ret = libusb_init(&context); 
 	if (ret < 0) { 
