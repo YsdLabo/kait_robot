@@ -1,4 +1,6 @@
 #include <ros/ros.h>
+#include "ics.h"
+#include "piezo_sonic.h"
 
 class SteeringController
 {
@@ -14,7 +16,7 @@ class SteeringController
   int servo_angle_now[4];
   
   ICSData ics_data;
-  Piezosonic piezo[4];
+  PiezoSonic *piezo[4];
   
   void drive_servo(int motor_id, int angle, int speed)
   {
@@ -44,10 +46,12 @@ class SteeringController
   public:
   SteeringController() {
     ics_init(&ics_data);
+    for(int i=0;i<4;i++) piezo[i] = new PiezoSonic(i);
   }
   
   ~SteeringController() {
     ics_close(&ics_data);
+    delete [] piezo;
   }
   
   void steering(int steer_next)
