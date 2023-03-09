@@ -4,6 +4,9 @@
 #include<driving_controller_pkg/DrivingState.h>
 #include<std_srvs/Empty.h>
 
+#include"piezo_sonic.h"
+#include"ics.h"
+
 namespace driving_controller_ns
 {
   class MotorController : public nodelet::Nodelet
@@ -43,6 +46,19 @@ namespace driving_controller_ns
   
   void MotorController::motor_loop_callback(const ros::TimerEvent& e)
   {
+    // Stop
+    if(driving_state == 999)
+    {
+    }
+    // Forward & Backward
+    else if(driving_state == 0)
+    {
+      // 
+    }
+    // Left-Forward & Right-Backward
+    // Right-Forward & Left-Backward
+    // Left & Right
+    // Rotation
   }
 }
 
