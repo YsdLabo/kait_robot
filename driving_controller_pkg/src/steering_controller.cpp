@@ -59,7 +59,7 @@ class SteeringController
   {
     int amount[4];
     for(int i=0;i<4;i++) {
-      amount[i] = (steering_angle[steer_next][i] - steering_angle[steer_now][i]) / 45;
+      amount[i] = (steering_angle[steer_next][i] - steering_angle[steer_now][i]) ;
     }
     drive_servo(i, steering_angle[steer_next][i], amount[i]);
     drive_piezo(i, amount[i]);
