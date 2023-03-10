@@ -7,11 +7,11 @@ class SteeringController
   private:
   int steer_now = 0;
   int steering_angle[][4] = {
-    {0, 0, 0, 0},
-    {45, 45, 45, 45},
-    {-45, -45, -45, -45},
-    {-90, 90, -90, 90},
-    {-45, 45, -45, 45}
+    {0, 0, 0, 0},          // 0: Stop, F, B
+    {45, 45, 45, 45},      // 1: FL, BR
+    {-45, -45, -45, -45},  // 2: FR, BL
+    {-90, 90, -90, 90},    // 3: L, R
+    {-45, 45, -45, 45}     // 4: Rotation
   };
   int servo_angle_now[4];
   
