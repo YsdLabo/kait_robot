@@ -17,13 +17,13 @@ enum class E_STEERING
 	DIRECTION_F = 0,
 	DIRECTION_B = 0,
 	DIRECTION_FL = 1,
-	DIRECTION_FR = -1,
+	DIRECTION_FR = 1,
 	DIRECTION_L = 2,
-	DIRECTION_R = -2,
+	DIRECTION_R = 2,
 	DIRECTION_BL = 3,
-	DIRECTION_BR = -3,
+	DIRECTION_BR = 3,
 	ROTATION_L = 4,
-	ROTATION_R = -4
+	ROTATION_R = 4
 };
 	
 class TwistToDriving : public nodelet::Nodelet
