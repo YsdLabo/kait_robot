@@ -10,6 +10,22 @@
 namespace driving_controller_ns
 {
 
+enum class E_STEERING
+{
+	NONE,
+	DIRECTION_STOP = 0,
+	DIRECTION_F = 0,
+	DIRECTION_B = 0,
+	DIRECTION_FL = 1,
+	DIRECTION_FR = -1,
+	DIRECTION_L = 2,
+	DIRECTION_R = -2,
+	DIRECTION_BL = 3,
+	DIRECTION_BR = -3,
+	ROTATION_L = 4,
+	ROTATION_R = -4
+};
+	
 class TwistToDriving : public nodelet::Nodelet
 {
 private:
@@ -39,21 +55,7 @@ private:
 	E_STATE main_state = E_STATE::NONE;
 	enum class E_ACTION { NONE, ENTRY, DO, EXIT };
 	E_ACTION action = E_ACTION::NONE;
-	enum class E_STEERING
-	{
-		NONE,
-		DIRECTION_STOP = 999,
-		DIRECTION_F = 0,
-		DIRECTION_B = 180,
-		DIRECTION_L = 90,
-		DIRECTION_R = -90,
-		DIRECTION_FL = 45,
-		DIRECTION_FR = -45,
-		DIRECTION_BL = 135,
-		DIRECTION_BR = -135,
-		ROTATION_L = 360,
-		ROTATION_R = -360
-	};
+
 	E_STEERING steering_dir_now;
 	E_STEERING stored_steering_dir;
 	
