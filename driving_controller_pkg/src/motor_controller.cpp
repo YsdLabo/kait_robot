@@ -2,7 +2,7 @@
 #include "ics.h"
 #include "piezo_sonic.h"
 
-class SteeringController
+class MotorController
 {
   private:
   int steer_now = 0;
