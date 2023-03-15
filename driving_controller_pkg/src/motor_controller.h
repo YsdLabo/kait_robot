@@ -2,6 +2,7 @@
 #define _MOTOR_CONTROLLER_H_
 
 #include <ros/ros.h>
+#include <sensor_msgs/JointState.h>
 #include "ics.h"
 #include "piezo_sonic.h"
 
