@@ -26,7 +26,7 @@ class MotorController
   constexpr double  alpha = 0.9;
   constexpr double  beta = 0.95;
   constexpr double  mps_to_digit = 1000.0;
-  double speed_d = 0;
+  double output[4];
   
   // Subscribe joint state
   ros::NodeHandle nh;
