@@ -35,7 +35,7 @@ MotorController::SteeringController() {
   ics_init(&ics_data);
   for(int i=0;i<4;i++) piezo[i].open(i);
   nh = getNodeHandle();
-  joint_states_sub = nh.subscribe("joint_states", 10, &MotorController::joint_states_callback);
+  joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback);
 }
   
 MotorController::~SteeringController() {
@@ -43,7 +43,7 @@ MotorController::~SteeringController() {
   delete [] piezo;
   for(int i=0;i<4;i++) piezo[i].close();
 }
-  
+
 void MotorController::steering(int steer_next)
 {
   int amount[4];
@@ -62,9 +62,13 @@ void MotorController::running(double speed_ms)
   if(speed == 0) speed_d = beta * speed_d + (1.0-beta) * speed;
   else speed_d = alpha * speed_d + (1.0-alpha) * speed;
     
-  // forward  0:+ 1:- 2:- 3:+
-  piezo[0].move(speed_d);
-  piezo[1].move(-1*speed_d);
-  piezo[2].move(-1*speed_d);
-  piezo[3].move(speed_d);
+  // forward  0:- 1:+ 2:+ 3:-
+  piezo[0].move(-1*speed_d);
+  piezo[1].move(speed_d);
+  piezo[2].move(speed_d);
+  piezo[3].move(-1*speed_d);
+}
+
+void MotorController::steering_ready()
+{
 }
