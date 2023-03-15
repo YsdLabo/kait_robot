@@ -201,21 +201,21 @@ private:
 	}
 	void start_steering()
 	{
-		driving_state.request.state = static_cast<int>(steering_dir_now);
+		driving_state.request.steering = static_cast<int>(steering_dir_now);
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
 		//motor_controller.steer(static_cast<double>(steering_dir_now));
 	}
 	void start_running()
 	{
-		driving_state.request.state = static_cast<int>(steering_dir_now);
+		driving_state.request.steering = static_cast<int>(steering_dir_now);
 		driving_state.request.speed = speed;
 		clientDrivingState.call(driving_state);
 		//motor_controller.move(static_cast<double>(steering_dir_now), speed);
 	}
 	void stop_running()
 	{
-		driving_state.request.state = static_cast<int>(steering_dir_now);
+		driving_state.request.steering = static_cast<int>(E_STEERING::DIRECTION_STOP);
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
 		//motor_controller.stop();
