@@ -178,11 +178,11 @@ private:
 	}
 	bool speed_is_zero()
 	{
-		return (speed < 0.01);
+		return (std::fabs(speed) < 0.01);
 	}
 	bool rotation_is_zero()
 	{
-		return (rotation < 0.5);
+		return (std::fabs(rotation) < 0.5);
 	}
 	void store_current_steering_dir()
 	{
