@@ -59,8 +59,10 @@ void MotorController::steering(int steer_next)
 {
   int amount[4];
   if(steer_next != steer_now) {
+    steer_last = steer_now;
   }
   for(int i=0;i<4;i++) {
+    amount[i] = steering_speed[steer_last][steer_next][i];
     //amount[i] = (steering_angle[steer_next][i] - steering_angle[steer_now][i]) / 45;
     drive_servo(i, steering_angle[steer_next][i], amount[i]);
     if(check_servos_stop(i)) drive_piezo(i, 0);
