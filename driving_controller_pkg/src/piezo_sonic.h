@@ -40,6 +40,7 @@ public:
 	void stop();
 	uint16_t status(int _address);
 	void config(int _address, int value);
+	void inv();
 };
 
 #endif
