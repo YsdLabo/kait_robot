@@ -29,7 +29,8 @@ class MotorController
   
   // Subscribe joint state
   ros::NodeHandle nh;
-  ros::Subscriber joint_state_sub;
+  ros::Subscriber joint_states_sub;
+  void joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg);
   
   void steer_servo(int motor_id, int angle, int speed);
   void steer_piezo(int motor_id, int speed);
