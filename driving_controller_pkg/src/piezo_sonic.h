@@ -20,6 +20,7 @@ class PiezoSonic
 	int id;
 	int rotate;
 	int speed;
+	bool inversion = false;
 
 	libusb_device_handle *handle;
 	
@@ -40,7 +41,7 @@ public:
 	void stop();
 	uint16_t status(int _address);
 	void config(int _address, int value);
-	void inv();
+	void invert();
 };
 
 #endif
