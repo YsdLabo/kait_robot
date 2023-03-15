@@ -19,6 +19,7 @@ namespace driving_controller_ns
     ros::Timer  motor_loop;
     
     int driving_state;
+    int speed;
     
     bool driving_state_service(driving_controller_pkg::DrivingState::Request&, driving_controller_pkg::DrivingState::Response&);
     bool stopped_state_service(std_srvs::Empty::Request&, std_srvs::Empty::Response&);
@@ -37,6 +38,7 @@ namespace driving_controller_ns
   bool SteeringManager::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
   {
     driving_state = req.request.state;
+    speed = req.request.speed;
   }
   
   bool SteeringManager::stopped_state_service(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
