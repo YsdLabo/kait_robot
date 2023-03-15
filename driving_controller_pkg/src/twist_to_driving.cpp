@@ -13,7 +13,7 @@ namespace driving_controller_ns
 enum class E_STEERING
 {
 	NONE,
-	DIRECTION_STOP = -1,
+	DIRECTION_STOP = 0,
 	DIRECTION_F = 0,
 	DIRECTION_B = 0,
 	DIRECTION_FL = 1,
@@ -118,11 +118,11 @@ private:
 	
 	void twist_to_direction()
 	{
-		if(!speed_is_zero()) {
+		if(speed_is_zero()) {
 			steering_dir_now = E_STEERING::DIRECTION_STOP;
 		}
 		else {
-			if( rotation_is_zero() ) {
+			if( rotation_is_zero()) {
 				if( course_is_in_area_F() ) steering_dir_now = E_STEERING::DIRECTION_F;
 				else if( course_is_in_area_L() ) steering_dir_now = E_STEERING::DIRECTION_L;
 				else if( course_is_in_area_R() ) steering_dir_now = E_STEERING::DIRECTION_R;
@@ -229,7 +229,7 @@ private:
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			if( course_changed() ) {
+			if(course_changed()) {
 				main_state = E_STATE::STEERING;
 				action = E_ACTION::EXIT;
 			}
