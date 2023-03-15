@@ -4,6 +4,7 @@
 #include<driving_controller_pkg/DrivingState.h>
 #include<std_srvs/Empty.h>
 
+#include"motor_controller.h"
 #include"piezo_sonic.h"
 #include"ics.h"
 
@@ -33,18 +34,18 @@ namespace driving_controller_ns
     }
   };
   
-  bool MotorController::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
+  bool SteeringManager::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
   {
     driving_state = req.request.state;
   }
   
-  bool MotorController::stopped_state_service(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
+  bool SteeringManager::stopped_state_service(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
   {
     if() return true;
     return false;
   }
   
-  void MotorController::motor_loop_callback(const ros::TimerEvent& e)
+  void SteeringManager::motor_loop_callback(const ros::TimerEvent& e)
   {
     // Stop
     if(driving_state == 999)
