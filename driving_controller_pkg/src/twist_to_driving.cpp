@@ -13,7 +13,7 @@ namespace driving_controller_ns
 enum class E_STEERING
 {
 	NONE,
-	DIRECTION_STOP = 0,
+	DIRECTION_STOP = -1,
 	DIRECTION_F = 0,
 	DIRECTION_B = 0,
 	DIRECTION_FL = 1,
