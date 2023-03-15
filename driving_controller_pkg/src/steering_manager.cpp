@@ -18,8 +18,9 @@ namespace driving_controller_ns
     ros::ServiceServer serverStoppedState;
     ros::Timer  motor_loop;
     
-    int driving_state;
-    double speed;
+    MotorController motor;
+    int driving_steer;
+    double driving_speed;
     
     bool driving_state_service(driving_controller_pkg::DrivingState::Request&, driving_controller_pkg::DrivingState::Response&);
     bool stopped_state_service(std_srvs::Empty::Request&, std_srvs::Empty::Response&);
@@ -37,8 +38,8 @@ namespace driving_controller_ns
   
   bool SteeringManager::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
   {
-    driving_state = req.request.state;
-    speed = req.request.speed;
+    driving_steer = req.request.state;
+    driving_speed = req.request.speed;
   }
   
   bool SteeringManager::stopped_state_service(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
@@ -49,19 +50,23 @@ namespace driving_controller_ns
   
   void SteeringManager::motor_loop_callback(const ros::TimerEvent& e)
   {
-    // Stop
-    if(speed < 0.1 && driving_state == 0)
+    // Steering
+    if(std::fabs(speed) < 0.01)
     {
+      motor.steering(driving_steer);
     }
-    // Forward & Backward
-    else if(driving_state == 0)
-    {
-      // 
+    // Running
+    else{
+      // Forward & Backward
+      else if(driving_state == 0)
+      {
+        // 
+      }
+      // Left-Forward & Right-Backward
+      // Right-Forward & Left-Backward
+      // Left & Right
+      // Rotation
     }
-    // Left-Forward & Right-Backward
-    // Right-Forward & Left-Backward
-    // Left & Right
-    // Rotation
   }
 }
 
