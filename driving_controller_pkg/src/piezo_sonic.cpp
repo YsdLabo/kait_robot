@@ -3,6 +3,7 @@
 void PiezoSonic::open(int _device_id)
 {
 	id = _device_id;
+	inversion = false;
 	
 	// libusbの初期化
 	int ret = libusb_init(&context); 
@@ -87,7 +88,7 @@ void PiezoSonic::close()
 int PiezoSonic::move(int _speed)
 {
 	uint16_t buf = 0;
-	int speed = _speed;
+	int speed = (inversion?-_speed:_speed);
 
 	if(handle != NULL) {
 		// Write Control 1 register
@@ -177,7 +178,9 @@ void PiezoSonic::write(uint8_t _address, uint16_t _value)
 	}
 }
 
-
-
+void PiezoSonic::invert()
+{
+	inversion = true;
+}
 
 
