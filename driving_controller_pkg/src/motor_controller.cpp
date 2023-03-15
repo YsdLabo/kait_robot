@@ -34,6 +34,8 @@ void MotorController::joint_states_callback(const sensor_msgs::JointState::Const
 MotorController::SteeringController() {
   ics_init(&ics_data);
   for(int i=0;i<4;i++) piezo[i].open(i);
+  piezo[0].inv();
+  piezo[3].inv();
   nh = getNodeHandle();
   joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback);
 }
@@ -59,14 +61,13 @@ void MotorController::running(double speed_ms)
 {
   double speed = speed_ms * mps_to_digit;
   // Low-pass
-  if(speed == 0) speed_d = beta * speed_d + (1.0-beta) * speed;
-  else speed_d = alpha * speed_d + (1.0-alpha) * speed;
-    
+  for(int i=0;i<4;i++) {
+    if(speed == 0) output[i] = beta * output[i] + (1.0-beta) * speed;
+    else output[i] = alpha * output[i] + (1.0-alpha) * speed;
+  }
+  
   // forward  0:- 1:+ 2:+ 3:-
-  piezo[0].move(-1*speed_d);
-  piezo[1].move(speed_d);
-  piezo[2].move(speed_d);
-  piezo[3].move(-1*speed_d);
+  doe(inr i=0;i<4;i+)) piezo[i].move(output[i]);
 }
 
 void MotorController::steering_ready()
