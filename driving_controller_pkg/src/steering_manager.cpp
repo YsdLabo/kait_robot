@@ -19,7 +19,7 @@ namespace driving_controller_ns
     ros::Timer  motor_loop;
     
     int driving_state;
-    int speed;
+    double speed;
     
     bool driving_state_service(driving_controller_pkg::DrivingState::Request&, driving_controller_pkg::DrivingState::Response&);
     bool stopped_state_service(std_srvs::Empty::Request&, std_srvs::Empty::Response&);
@@ -50,7 +50,7 @@ namespace driving_controller_ns
   void SteeringManager::motor_loop_callback(const ros::TimerEvent& e)
   {
     // Stop
-    if(driving_state == 999)
+    if(speed < 0.1 && driving_state == 0)
     {
     }
     // Forward & Backward
