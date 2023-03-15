@@ -9,7 +9,7 @@
 
 namespace driving_controller_ns
 {
-  class MotorController : public nodelet::Nodelet
+  class SteeringManager : public nodelet::Nodelet
   {
     private:
     ros::NodeHandle nh;
@@ -62,4 +62,4 @@ namespace driving_controller_ns
   }
 }
 
-PLUGINLIB_EXPORT_CLASS(driving_controller_ns::MotorController, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(driving_controller_ns::SteeringManager, nodelet::Nodelet)
