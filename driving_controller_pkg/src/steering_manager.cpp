@@ -19,7 +19,7 @@ namespace driving_controller_ns
     ros::Timer  motor_loop;
     
     MotorController motor;
-    int driving_steer;
+    int steering_dir;
     double driving_speed;
     
     bool driving_state_service(driving_controller_pkg::DrivingState::Request&, driving_controller_pkg::DrivingState::Response&);
@@ -38,7 +38,7 @@ namespace driving_controller_ns
   
   bool SteeringManager::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
   {
-    driving_steer = req.request.state;
+    steering_dir = req.request.steering;
     driving_speed = req.request.speed;
   }
   
@@ -51,22 +51,15 @@ namespace driving_controller_ns
   void SteeringManager::motor_loop_callback(const ros::TimerEvent& e)
   {
     // Steering
-    if(std::fabs(speed) < 0.01)
+    if(std::fabs(driving_speed) < 0.01)
     {
-      motor.steering(driving_steer);
+      motor.steering(steering_dir);
     }
     // Running
     else{
-      // Forward & Backward
-      else if(driving_state == 0)
-      {
-        // 
-      }
-      // Left-Forward & Right-Backward
-      // Right-Forward & Left-Backward
-      // Left & Right
-      // Rotation
+      motor.running(driving_speed);
     }
+    // check
   }
 }
 
