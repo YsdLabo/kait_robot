@@ -10,6 +10,7 @@ class MotorController
 {
   private:
   int steer_now = 0;
+  int steer_last = 0;
   int steering_angle[][4] = {
     {7500, 7500, 7500, 7500},    // 0: Stop, F, B (0,0,0,0)
     {8833, 8833, 8833, 8833},    // 1: FL, BR (45,45,45,45)
