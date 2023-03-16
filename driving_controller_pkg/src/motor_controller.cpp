@@ -32,14 +32,19 @@ bool MotorController::check_all_servos_stop()
   return false;
 }
 
-bool MotorController::check_all_motors_stop()
+bool MotorController::check_all_piezos_stop()
 {
-  
+  int cnt = 0;
+  for(int i=1;i<8;i+=2) {
+    if(joint_state.velocity[i] < 0.01) cnt++;
+  }
+  if(cnt == 4) return true;
+  return false;
 }
 
 void MotorController::joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg)
 {
-  
+  joint_state = *msg;
 }
 
 MotorController::SteeringController()
