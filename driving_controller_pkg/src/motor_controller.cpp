@@ -12,7 +12,7 @@ void MotorController::drive_piezo(int motor_id, int speed)
   int speed_m = speed;
   if(speed > 4000) speed_m = 4000;
   if(speed < -4000) speed_m = -4000;
-  piezo[motor_id].move(speed_m);
+  piezo[2*motor_id+2].move(speed_m);
 }
 
 bool MotorController::check_servo_stop(int id)
@@ -45,13 +45,12 @@ MotorController::SteeringController()
   piezo[3].invert();
   nh = getNodeHandle();
   joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback);
-  steer_last = steer_now = static_cast<E_STEERING>(E_STEERING::DIRECTION_STOP);
+  steer_last = steer_now = steer_next = static_cast<E_STEERING>(E_STEERING::DIRECTION_STOP);
 }
   
 MotorController::~SteeringController()
 {
   ics_close(&ics_data);
-  delete [] piezo;
   for(int i=0;i<4;i++) piezo[i].close();
 }
 
