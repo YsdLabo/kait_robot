@@ -1,10 +1,9 @@
 #include "motor_controller.h"
 
 
-void MotorController::drive_servo(int motor_id, int angle, int speed)
+void MotorController::drive_servo(int motor_id, int pulse, int speed)
 {
   ics_set_speed(&ics_data, motor_id, std::abs(speed) * 20);
-  int pulse = angle_to_pulse(angle);
   ics_pos(&ics_data, motor_id, pulse);
 }
   
@@ -14,14 +13,6 @@ void MotorController::drive_piezo(int motor_id, int speed)
   if(speed > 4000) speed_m = 4000;
   if(speed < -4000) speed_m = -4000;
   piezo[motor_id].move(speed_m);
-}
-  
-int MotorController::angle_to_pulse(int angle)
-{
-  int pulse = (int)(angle * 4000.0 / 135.0) + 7500;
-  if(pulse < 3500) pulse = 3500;
-  if(pulse > 11500) pulse = 11500;
-  return pulse;
 }
 
 bool MotorController::check_servos_stop()
@@ -57,16 +48,14 @@ MotorController::~SteeringController()
 
 void MotorController::steering(int steer_next)
 {
-  int amount[4];
   if(steer_next != steer_now) {
     steer_last = steer_now;
   }
   for(int i=0;i<4;i++) {
-    amount[i] = steering_speed[steer_last][steer_next][i];
-    //amount[i] = (steering_angle[steer_next][i] - steering_angle[steer_now][i]) / 45;
-    drive_servo(i, steering_angle[steer_next][i], amount[i]);
+    int amount = steering_speed[steer_last][steer_next][i];
+    drive_servo(i, steering_angle[steer_next][i], amount);
     if(check_servos_stop(i)) drive_piezo(i, 0);
-    else drive_piezo(i, amount[i]);
+    else drive_piezo(i, amount*500);
   }
   
   steer_now = steer_next;
