@@ -11,6 +11,7 @@ class MotorController
   private:
   int steer_now = 0;
   int steer_last = 0;
+  int steer_next = 0;
   int steering_angle[][4] = {
     {7500, 7500, 7500, 7500},    // 0: Stop, F, B (0,0,0,0)
     {8833, 8833, 8833, 8833},    // 1: FL, BR (45,45,45,45)
@@ -43,7 +44,9 @@ class MotorController
   
   void steer_servo(int motor_id, int angle, int speed);
   void steer_piezo(int motor_id, int speed);
-  int angle_to_pulse(int angle);
+
+  bool check_servo_stop(int id);
+  bool check_all_servos_stop();
   
   public:
   SteeringController();
