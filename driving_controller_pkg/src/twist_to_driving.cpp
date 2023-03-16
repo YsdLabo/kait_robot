@@ -60,7 +60,7 @@ private:
 	E_ACTION action = E_ACTION::NONE;
 
 	E_STEERING steering_dir_now;
-	E_STEERING stored_steering_dir;
+	E_STEERING steering_dir_last;
 	
 public:
 	void onInit()
@@ -205,11 +205,11 @@ private:
 	}
 	void store_current_steering_dir()
 	{
-		stored_steering_dir = steering_dir_now;
+		steering_dir_last = steering_dir_now;
 	}
 	bool course_changed()
 	{
-		return (steering_dir_now != stored_steering_dir);
+		return (steering_dir_now != steering_dir_last);
 	}
 	
 	bool check_all_motors_stopped()
