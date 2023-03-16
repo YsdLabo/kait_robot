@@ -70,8 +70,8 @@ public:
 		
 		pnh.param("max_speed", MAX_SPEED, "1.0");
 		pnh.param("min_speed", MIN_SPEED, "0.01");
-		pnh.param("max_rotation", MAX_SPEED, "2.0");
-		pnh.param("min_rotation", MIN_SPEED, "0.5");
+		pnh.param("max_rotation", MAX_ROTATION, "2.0");
+		pnh.param("min_rotation", MIN_ROTATION, "0.5");
 		pnh.param("frequency", FREQUENCY, "50");
 		
 		sub_cmd_vel = nh.subscribe("~cmd_vel", 10, &TwistToDriving::cmd_vel_callback, this);
@@ -88,14 +88,14 @@ private:
 	{
 		double x = msg->linear.x;
 		double y = msg->linear.y;
-		double w = msg->angular.z;
 		
 		course = std::atan2(y, x);
 		speed  = std::sqrt(x*x+y*y);
 		if(speed > MAX_SPEED) speed = MAX_SPEED;
 		if(speed < MIN_SPEED) speed = 0.0;
 		if(course > AREA_L_B || course < AREA_R_B) speed *= -1.0;
-		rotation = w;
+		
+		rotation = msg->angular.z;
 		if(std::fabs(rotation) < MIN_ROTATION) rotation = 0.0;
 		else speed = (std::sqrt(2) * 0.2 + 0.05) * rotation;
 	}
@@ -104,6 +104,7 @@ private:
 	void stm_callback(const ros::TimerEvent& e)
 	{
 		twist_to_direction();
+		
 		switch(main_state)
 		{
 		case E_STATE::NONE:
