@@ -42,8 +42,11 @@ private:
 	driving_controller_pkg::DrivingState driving_state;
 	
 	// Parameter
-	double max_speed;
-	double frequency;
+	double MAX_SPEED;
+	double MIN_SPEED;
+	double MAX_ROTATION;
+	double MIN_ROTATION;
+	double FREQUENCY;
 	
 	//
 	double course;
@@ -65,12 +68,15 @@ public:
 		nh = getNodeHandle();
 		pnh = getPrivateNodeHandle();
 		
-		pnh.param("max_speed", max_speed, "1.0");
-		pnh.param("frequency", frequency, "50");
+		pnh.param("max_speed", MAX_SPEED, "1.0");
+		pnh.param("min_speed", MIN_SPEED, "0.01");
+		pnh.param("max_rotation", MAX_SPEED, "2.0");
+		pnh.param("min_rotation", MIN_SPEED, "0.5");
+		pnh.param("frequency", FREQUENCY, "50");
 		
 		sub_cmd_vel = nh.subscribe("~cmd_vel", 10, &TwistToDriving::cmd_vel_callback, this);
 		pub_driving_direction = nh.advertise<std_msgs::Int32>("driving_direction", 1);
-		stm_timer = nh.createTimer(ros::Duration(1.0/frequency), &TwistToDriving::stm_callback, this);
+		stm_timer = nh.createTimer(ros::Duration(1.0/FREQUENCY), &TwistToDriving::stm_callback, this);
 		
 		clientDrivingState = nh.serviceClient<driving_controller_pkg::DrivingState>("DrivingState");
 		clientStoppedState = nh.serviceClient<std_srvs::Empty>("StoppedState");
@@ -87,9 +93,14 @@ private:
 		course = std::atan2(y, x);
 		speed  = std::sqrt(x*x+y*y);
 		if(speed > MAX_SPEED) speed = MAX_SPEED;
+		if(speed < MIN_SPEED) speed = 0.0;
+		if(course > AREA_L_B || course < AREA_R_B) speed *= -1.0;
 		rotation = w;
+		if(std::fabs(rotation) < MIN_ROTATION) rotation = 0.0;
+		else speed = (std::sqrt(2) * 0.2 + 0.05) * rotation;
 	}
 	
+	// Main Loop
 	void stm_callback(const ros::TimerEvent& e)
 	{
 		twist_to_direction();
@@ -133,8 +144,8 @@ private:
 				else steering_dir_now = E_STEERING::DIRECTION_B;
 			}
 			else {
-				if( is_rotate_L() ) steering_dir_now = E_STEERING::ROTATION_L;
-				else if( is_rotate_R() ) steering_dir_now = E_STEERING::ROTATION_R;
+				if( course_is_rotate_L() ) steering_dir_now = E_STEERING::ROTATION_L;
+				else if( course_is_rotate_R() ) steering_dir_now = E_STEERING::ROTATION_R;
 			}
 		}
 	}
@@ -176,13 +187,21 @@ private:
 	{
 		return (course > AREA_B_R && course < AREA_R_B);  // -157.5〜-112.5
 	}
+	bool course_is_rotate_L()
+	{
+		return (rotation > 0);
+	}
+	bool course_is_rotate_R()
+	{
+		return (rotation < 0);
+	}
 	bool speed_is_zero()
 	{
-		return (std::fabs(speed) < 0.01);
+		return (std::fabs(speed) < MIN_SPEED);
 	}
 	bool rotation_is_zero()
 	{
-		return (std::fabs(rotation) < 0.5);
+		return (std::fabs(rotation) < MIN_ROTATION);
 	}
 	void store_current_steering_dir()
 	{
