@@ -21,6 +21,7 @@ namespace driving_controller_ns
     MotorController motor;
     int steering_dir;
     double driving_speed;
+    bool stop_flag = true;
     
     bool driving_state_service(driving_controller_pkg::DrivingState::Request&, driving_controller_pkg::DrivingState::Response&);
     bool stopped_state_service(std_srvs::Empty::Request&, std_srvs::Empty::Response&);
@@ -46,8 +47,7 @@ namespace driving_controller_ns
   
   bool SteeringManager::stopped_state_service(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
   {
-    if(motor.check_all_servos_stop()) return true;
-    return false;
+    return stop_flag;
   }
   
   // Main Loop
@@ -62,6 +62,9 @@ namespace driving_controller_ns
     else{
       motor.running(driving_speed);
     }
+    // check
+    if(motor.check_all_servos_stop() && motor.check_all_piezos_stop()) stop_flag = true;
+    else stop_flag = false;
   }
 }
 
