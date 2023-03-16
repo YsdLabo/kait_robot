@@ -18,7 +18,7 @@ void MotorController::drive_piezo(int motor_id, int speed)
 bool MotorController::check_servo_stop(int id)
 {
   int pos = ics_get_position(&ics_data, id);
-  if(abs(pos - string_angle[steer_now][i]) < 4) return true;
+  if(abs(pos - string_angle[steer_next][i]) < 4) return true;
   return false;
 }
 
@@ -55,8 +55,9 @@ MotorController::~SteeringController()
   for(int i=0;i<4;i++) piezo[i].close();
 }
 
-void MotorController::steering(int steer_next)
+void MotorController::steering(int next)
 {
+  sterr_next = next;
   if(steer_next != steer_now) {
     steer_last = steer_now;
   }
