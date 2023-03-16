@@ -60,6 +60,7 @@ namespace driving_controller_ns
       motor.running(driving_speed);
     }
     // check
+    if(motor.check_all_servos_stop()) 
   }
 }
 
