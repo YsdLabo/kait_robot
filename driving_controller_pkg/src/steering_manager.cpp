@@ -36,18 +36,21 @@ namespace driving_controller_ns
     }
   };
   
+  // Service
   bool SteeringManager::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
   {
     steering_dir = req.request.steering;
     driving_speed = req.request.speed;
+    return true;
   }
   
   bool SteeringManager::stopped_state_service(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
   {
-    if() return true;
+    if(motor.check_all_servos_stop()) return true;
     return false;
   }
   
+  // Main Loop
   void SteeringManager::motor_loop_callback(const ros::TimerEvent& e)
   {
     // Steering
@@ -59,8 +62,6 @@ namespace driving_controller_ns
     else{
       motor.running(driving_speed);
     }
-    // check
-    if(motor.check_all_servos_stop()) 
   }
 }
 
