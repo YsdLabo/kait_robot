@@ -3,7 +3,7 @@
 
 void MotorController::drive_servo(int motor_id, int pulse, int speed)
 {
-  ics_set_speed(&ics_data, motor_id, std::abs(speed) * 20);
+  ics_set_speed(&ics_data, motor_id, std::abs(speed));
   ics_pos(&ics_data, motor_id, pulse);
 }
   
@@ -62,7 +62,7 @@ void MotorController::steering(int next)
   }
   for(int i=0;i<4;i++) {
     int amount = steering_speed[steer_last][steer_next][i];
-    drive_servo(i, steering_angle[steer_next][i], amount);
+    drive_servo(i, steering_angle[steer_next][i], amount*20);
     if(check_servo_stop(i)) drive_piezo(i, 0);
     else drive_piezo(i, amount*500);
   }
@@ -72,14 +72,31 @@ void MotorController::steering(int next)
   
 void MotorController::running(double speed_ms)
 {
-  double speed = speed_ms * mps_to_digit;
+  double speed_d = speed_ms * mps_to_digit;
   // Low-pass
   for(int i=0;i<4;i++) {
-    if(speed == 0) output[i] = beta * output[i] + (1.0-beta) * speed;  // when to stop
-    else output[i] = alpha * output[i] + (1.0-alpha) * speed;    // when to accelerate
+    if(speed_d == 0) output[i] = beta * output[i] + (1.0-beta) * speed_d;  // when to stop
+    else output[i] = alpha * output[i] + (1.0-alpha) * speed_d;    // when to accelerate
+    if(output[i] < 10) output[i] = 0;
   }
   
-  // forward  0:- 1:+ 2:+ 3:-
-  for(int i=0;i<4;i++) drive_piezo(i, output[i]);
+  // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
+  for(int i=0;i<4;i++) {
+    if(steer_next < 3) {
+      drive_piezo(i, (int)output[i]);
+    }
+    else {
+      // L,Rot.L  0:- 1:+ 2:- 3:+
+      if(speed_ms > 0) {
+        if(i%2 == 0) drive_piezo(i, -1*(int)output[i]);
+        else drive_piezo(i, (int)output[i]);
+      }
+      // R,Rot.R  0:+ 1:- 2:+ 3:-
+      else {
+        if(i%2 == 0) drive_piezo(i, (int)output[i]);
+        else drive_piezo(i, -1*(int)output[i]);
+      }
+    }
+  }     
 }
 
