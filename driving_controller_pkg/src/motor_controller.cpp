@@ -3,8 +3,8 @@
 
 void MotorController::drive_servo(int motor_id, int pulse, int speed)
 {
-  ics_set_speed(&ics_data, motor_id, std::abs(speed));
-  ics_pos(&ics_data, motor_id, pulse);
+  ics_set_speed(&ics_data, motor_id+1, std::abs(speed));
+  ics_pos(&ics_data, motor_id+1, pulse);
 }
   
 void MotorController::drive_piezo(int motor_id, int speed)
@@ -17,7 +17,7 @@ void MotorController::drive_piezo(int motor_id, int speed)
 
 bool MotorController::check_servo_stop(int id)
 {
-  int pos = ics_get_position(&ics_data, id);
+  int pos = ics_get_position(&ics_data, id+1);
   if(abs(pos - steering_angle[steer_next][id]) < 4) return true;
   return false;
 }
@@ -72,7 +72,7 @@ void MotorController::steering(int next)
   }
   for(int i=0;i<4;i++) {
     int amount = steering_speed[steer_last][steer_next][i];
-    drive_servo(i+1, steering_angle[steer_next][i], amount*20);
+    drive_servo(i, steering_angle[steer_next][i], amount*20);
     if(check_servo_stop(i)) drive_piezo(i, 0);
     else drive_piezo(i, amount*500);
   }
