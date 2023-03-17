@@ -12,13 +12,13 @@ void MotorController::drive_piezo(int motor_id, int speed)
   int speed_m = speed;
   if(speed > 4000) speed_m = 4000;
   if(speed < -4000) speed_m = -4000;
-  piezo[2*motor_id+2].move(speed_m);
+  piezo[motor_id].move(speed_m);
 }
 
 bool MotorController::check_servo_stop(int id)
 {
   int pos = ics_get_position(&ics_data, id);
-  if(abs(pos - string_angle[steer_next][i]) < 4) return true;
+  if(abs(pos - steering_angle[steer_next][id]) < 4) return true;
   return false;
 }
 
@@ -47,18 +47,18 @@ void MotorController::joint_states_callback(const sensor_msgs::JointState::Const
   joint_state = *msg;
 }
 
-MotorController::SteeringController()
+MotorController::MotorController()
 {
   ics_init(&ics_data);
-  for(int i=0;i<4;i++) piezo[i].open(i);
+  for(int i=0;i<4;i++) piezo[i].open(2*i+1);  // open 2, 4, 6, 8
   piezo[0].invert();
   piezo[3].invert();
-  nh = getNodeHandle();
-  joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback);
-  steer_last = steer_now = steer_next = static_cast<E_STEERING>(E_STEERING::DIRECTION_STOP);
+//  nh = getNodeHandle();
+  joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback, this);
+  steer_last = steer_now = steer_next = 0;
 }
   
-MotorController::~SteeringController()
+MotorController::~MotorController()
 {
   ics_close(&ics_data);
   for(int i=0;i<4;i++) piezo[i].close();
@@ -66,13 +66,13 @@ MotorController::~SteeringController()
 
 void MotorController::steering(int next)
 {
-  sterr_next = next;
+  steer_next = next;
   if(steer_next != steer_now) {
     steer_last = steer_now;
   }
   for(int i=0;i<4;i++) {
     int amount = steering_speed[steer_last][steer_next][i];
-    drive_servo(i, steering_angle[steer_next][i], amount*20);
+    drive_servo(i+1, steering_angle[steer_next][i], amount*20);
     if(check_servo_stop(i)) drive_piezo(i, 0);
     else drive_piezo(i, amount*500);
   }

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="manager_name" default="driving_controller_nodelet_manager"/>
+  
+  <node pkg="nodelet" type="nodelet" args="manager" name="$(arg manager_name)" output="screen"/>
+  
+  <node pkg="nodelet" type="nodelet" args="load nodelet_driving_controller/TwistToDriving $(arg manager_name)" name="twist_to_driving_loader" output="screen" />
+  
+  <node pkg="nodelet" type="nodelet" args="load nodelet_driving_controller/SteeringManager $(arg manager_name)" name="steering_manager_loader" output="screen" />
+</launch>

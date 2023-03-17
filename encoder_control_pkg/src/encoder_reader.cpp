@@ -31,7 +31,7 @@ void encoderCallback(const std_msgs::Int32MultiArray::ConstPtr& msg)
 
 void timerCallback(const ros::TimerEvent& e)
 {
-	current_time = ros::Time::now()
+	current_time = ros::Time::now();
 	for(int i=0;i<MOTOR_NUMS;i++)
 		current_angle[i] = enc_count[i] * toRadian;
 

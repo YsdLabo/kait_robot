@@ -29,17 +29,17 @@ namespace driving_controller_ns
     void onInit()
     {
       nh = getNodeHandle();
-      serverDrivingState = nh.advertiseService("DrivingState", &MotorController::driving_state_service, this);
-      serverStoppedState = nh.advertiseService("StoppedState", &MotorController::stopped_state_service, this);
-      motor_loop = nh.createTimer(ros::Duration(0.01), &MotorController::motor_loop_callback, this);
+      serverDrivingState = nh.advertiseService("DrivingState", &SteeringManager::driving_state_service, this);
+      serverStoppedState = nh.advertiseService("StoppedState", &SteeringManager::stopped_state_service, this);
+      motor_loop = nh.createTimer(ros::Duration(0.01), &SteeringManager::motor_loop_callback, this);
     }
   };
   
   // Service
   bool SteeringManager::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
   {
-    steering_dir = req.request.steering;
-    driving_speed = req.request.speed;
+    steering_dir = req.steering;
+    driving_speed = req.speed;
     return true;
   }
   
@@ -66,4 +66,4 @@ namespace driving_controller_ns
   }
 }
 
-PLUGINLIB_EXPORT_CLASS(driving_controller_ns::SteeringManager, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(driving_controller_ns::SteeringManager, nodelet::Nodelet);

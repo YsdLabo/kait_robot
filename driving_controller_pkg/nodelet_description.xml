@@ -1,6 +1,11 @@
-<library path="lib/libdriving_controller">
-  <class name="driving_controller/TwistToDriving"
-    type="driving_controller::TwistToDriving"
+<library path="lib/libnodelet_driving_controller">
+  <class name="nodelet_driving_controller/TwistToDriving"
+    type="driving_controller_ns::TwistToDriving"
+    base_class_type="nodelet::Nodelet">
+    <description></description>
+  </class>
+  <class name="nodelet_driving_controller/SteeringManager"
+    type="driving_controller_ns::SteeringManager"
     base_class_type="nodelet::Nodelet">
     <description></description>
   </class>

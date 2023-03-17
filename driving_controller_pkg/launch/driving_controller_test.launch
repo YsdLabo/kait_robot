@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find driving_controller_pkg)/launch/driving_controller.launch"/>
+  <node pkg="driving_controller_pkg" type="driving_controller_test" name="driving_test" output="screen"/>
+</launch>

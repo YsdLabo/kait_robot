@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   roscpp
   geometry_msgs
+  sensor_msgs
   std_msgs
   message_generation
 )
@@ -207,13 +208,20 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
+add_executable(driving_controller_test src/driving_controller_test.cpp)
+target_link_libraries(driving_controller_test ${catkin_LIBRARIES})
+
 add_library(
   nodelet_driving_controller
   src/twist_to_driving.cpp
+  src/steering_manager.cpp
+  src/motor_controller.cpp
+  src/ics.cpp
+  src/piezo_sonic.cpp
 )
 target_link_libraries(
   nodelet_driving_controller
-  ${catkin_LIBRARIES}
+  ${catkin_LIBRARIES} ftdi usb-1.0
 )
 add_dependencies(
   nodelet_driving_controller

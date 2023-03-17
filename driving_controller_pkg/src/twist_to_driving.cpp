@@ -14,16 +14,16 @@ enum class E_STEERING
 {
 	NONE,
 	DIRECTION_STOP = 0,
-	DIRECTION_F = 0,
-	DIRECTION_B = 0,
-	DIRECTION_FL = 1,
-	DIRECTION_BR = 1,
-	DIRECTION_FR = 2,
-	DIRECTION_BL = 2,
-	DIRECTION_L = 3,
-	DIRECTION_R = 3,
-	ROTATION_L = 4,
-	ROTATION_R = 4
+	DIRECTION_F = 1,
+	DIRECTION_B = 2,
+	DIRECTION_FL = 3,
+	DIRECTION_BR = 4,
+	DIRECTION_FR = 5,
+	DIRECTION_BL = 6,
+	DIRECTION_L = 7,
+	DIRECTION_R = 8,
+	ROTATION_L = 9,
+	ROTATION_R = 10
 };
 	
 class TwistToDriving : public nodelet::Nodelet
@@ -61,6 +61,15 @@ private:
 
 	E_STEERING steering_dir_now;
 	E_STEERING steering_dir_last;
+
+	static constexpr double AREA_F_L = M_PI / 8.0;			// 22.5
+	static constexpr double AREA_L_F = M_PI * 3.0 / 8.0;		// 67.5
+	static constexpr double AREA_L_B = M_PI * 5.0 / 8.0;		// 112.5
+	static constexpr double AREA_B_L = M_PI * 7.0 / 8.0;		// 157.5
+	static constexpr double AREA_F_R = - M_PI / 8.0;		// -22.5
+	static constexpr double AREA_R_F = - M_PI * 3.0 / 8.0;		// -67.5
+	static constexpr double AREA_R_B = - M_PI * 5.0 / 8.0;		// -112.5
+	static constexpr double AREA_B_R = - M_PI * 7.0 / 8.0;		// -157.5
 	
 public:
 	void onInit()
@@ -68,38 +77,37 @@ public:
 		nh = getNodeHandle();
 		pnh = getPrivateNodeHandle();
 		
-		pnh.param("max_speed", MAX_SPEED, "1.0");
-		pnh.param("min_speed", MIN_SPEED, "0.01");
-		pnh.param("max_rotation", MAX_ROTATION, "2.0");
-		pnh.param("min_rotation", MIN_ROTATION, "0.5");
-		pnh.param("frequency", FREQUENCY, "50");
+		pnh.param("max_speed", MAX_SPEED, 1.0);
+		pnh.param("min_speed", MIN_SPEED, 0.01);
+		pnh.param("max_rotation", MAX_ROTATION, 2.0);
+		pnh.param("min_rotation", MIN_ROTATION, 0.5);
+		pnh.param("frequency", FREQUENCY, 50.0);
 		
-		sub_cmd_vel = nh.subscribe("~cmd_vel", 10, &TwistToDriving::cmd_vel_callback, this);
+		sub_cmd_vel = nh.subscribe("cmd_vel", 10, &TwistToDriving::cmd_vel_callback, this);
 		pub_driving_direction = nh.advertise<std_msgs::Int32>("driving_direction", 1);
 		stm_timer = nh.createTimer(ros::Duration(1.0/FREQUENCY), &TwistToDriving::stm_callback, this);
 		
 		clientDrivingState = nh.serviceClient<driving_controller_pkg::DrivingState>("DrivingState");
 		clientStoppedState = nh.serviceClient<std_srvs::Empty>("StoppedState");
-		driving_state.request.state = static_cast<int>(E_STATE::NONE);
 	}
-	
+
 private:
-	void cmd_vel_callback(const geometry_msgs::Twist& msg)
+	void cmd_vel_callback(const geometry_msgs::Twist::ConstPtr& msg)
 	{
 		double x = msg->linear.x;
 		double y = msg->linear.y;
-		
 		course = std::atan2(y, x);
 		speed  = std::sqrt(x*x+y*y);
 		if(speed > MAX_SPEED) speed = MAX_SPEED;
 		if(speed < MIN_SPEED) speed = 0.0;
-		if(course > AREA_L_B || course < AREA_R_B) speed *= -1.0;
+		if(course > AREA_L_B || course < AREA_R_F) speed *= -1.0;
 		
 		rotation = msg->angular.z;
 		if(std::fabs(rotation) < MIN_ROTATION) rotation = 0.0;
 		else speed = (std::sqrt(2) * 0.2 + 0.05) * rotation;
+		NODELET_INFO("%lf:%lf:%lf", course, speed, rotation);
 	}
-	
+
 	// Main Loop
 	void stm_callback(const ros::TimerEvent& e)
 	{
@@ -111,7 +119,8 @@ private:
 			main_state = E_STATE::IDLING;
 			action = E_ACTION::ENTRY;
 			steering_dir_now = E_STEERING::DIRECTION_STOP;
-			store_steering_dir = steering_dir_now;
+			steering_dir_last = steering_dir_now;
+			start_steering();
 			break;
 		case E_STATE::IDLING:
 			state_idling();
@@ -127,7 +136,7 @@ private:
 			break;
 		}
 	}
-	
+
 	void twist_to_direction()
 	{
 		if(speed_is_zero()) {
@@ -150,15 +159,6 @@ private:
 			}
 		}
 	}
-	
-	constexpr double AREA_F_L = M_PI / 8.0;			// 22.5
-	constexpr double AREA_L_F = M_PI * 3.0 / 8.0;		// 67.5
-	constexpr double AREA_L_B = M_PI * 5.0 / 8.0;		// 112.5
-	constexpr double AREA_B_L = M_PI * 7.0 / 8.0;		// 157.5
-	constexpr double AREA_F_R = - M_PI / 8.0;		// -22.5
-	constexpr double AREA_R_F = - M_PI * 3.0 / 8.0;		// -67.5
-	constexpr double AREA_R_B = - M_PI * 5.0 / 8.0;		// -112.5
-	constexpr double AREA_B_R = - M_PI * 7.0 / 8.0;		// -157.5
 	
 	bool course_is_in_area_F()
 	{
@@ -221,14 +221,16 @@ private:
 	}
 	void start_steering()
 	{
-		driving_state.request.steering = static_cast<int>(steering_dir_now);
+		int n = static_cast<int>(steering_dir_now);
+		driving_state.request.steering = (n==0?0:(n-1)/2);
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
 		//motor_controller.steer(static_cast<double>(steering_dir_now));
 	}
 	void start_running()
 	{
-		driving_state.request.steering = static_cast<int>(steering_dir_now);
+		int n = static_cast<int>(steering_dir_now);
+		driving_state.request.steering = (n==0?0:(n-1)/2);
 		driving_state.request.speed = speed;
 		clientDrivingState.call(driving_state);
 		//motor_controller.move(static_cast<double>(steering_dir_now), speed);
@@ -245,6 +247,7 @@ private:
 	void state_idling()
 	{
 		if(action == E_ACTION::ENTRY) {
+			NODELET_INFO("[State] Idling");
 			store_current_steering_dir();
 			action = E_ACTION::DO;
 		}
@@ -263,12 +266,14 @@ private:
 	void state_steering()
 	{
 		if(action == E_ACTION::ENTRY) {
+			NODELET_INFO("[State] Steering: %d", static_cast<int>(steering_dir_now));
 			store_current_steering_dir();
 			start_steering();
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			if(check_all_motors_stopped()) {
+			//if(check_all_motors_stopped()) 
+			{
 				if(course_changed()) main_state = E_STATE::STEERING;
 				else main_state = E_STATE::RUNNING;
 				action = E_ACTION::EXIT;
@@ -283,11 +288,12 @@ private:
 	void state_running()
 	{
 		if(action == E_ACTION::ENTRY) {
+			NODELET_INFO("[State] Running");
 			// store_current_steering_dir();
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			start_running();
+			//start_running();
 			if(course_changed()) {
 				main_state = E_STATE::STOPPING;
 				action = E_ACTION::EXIT;
@@ -302,12 +308,15 @@ private:
 	void state_stopping()
 	{
 		if(action == E_ACTION::ENTRY) {
-			stop_running();
+			NODELET_INFO("[State] Stopping");
+			//stop_running();
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			if(check_all_motors_stopped()) {
-				main_state = E_STATE::IDLING;
+			//if(check_all_motors_stopped()) 
+			{
+				if(steering_dir_now == E_STEERING::DIRECTION_STOP) main_state = E_STATE::IDLING;
+				else main_state = E_STATE::STEERING;
 				action = E_ACTION::EXIT;
 			}
 		}
@@ -315,9 +324,8 @@ private:
 			action = E_ACTION::ENTRY;
 		}
 	}
-
 };
 
 }
 
-PLUGINLIB_EXPORT_CLASS(driving_controller_ns::TwistToDriving, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(driving_controller_ns::TwistToDriving, nodelet::Nodelet);
