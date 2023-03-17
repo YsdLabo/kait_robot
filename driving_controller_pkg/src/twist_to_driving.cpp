@@ -212,6 +212,10 @@ private:
 	{
 		return (steering_dir_now != steering_dir_last);
 	}
+	bool go_to_stop()
+	{
+		return (steering_dir_now == E_STEERING::DIRECTION_STOP);
+	}
 	
 	bool check_all_motors_stopped()
 	{
@@ -315,7 +319,7 @@ private:
 		if(action == E_ACTION::DO) {
 			//if(check_all_motors_stopped()) 
 			{
-				if(steering_dir_now == E_STEERING::DIRECTION_STOP) main_state = E_STATE::IDLING;
+				if(go_to_stop()) main_state = E_STATE::IDLING;
 				else main_state = E_STATE::STEERING;
 				action = E_ACTION::EXIT;
 			}
