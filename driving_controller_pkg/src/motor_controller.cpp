@@ -92,9 +92,11 @@ void MotorController::running(double speed_ms)
   
   // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
   for(int i=0;i<4;i++) {
-    if(steer_next < 3) {
+    // F, B, FL, FR, BL, BR
+    if(steer_next < 4) {
       drive_piezo(i, (int)output[i]);
     }
+    // L, R, RotL, RotR
     else {
       // L,Rot.L  0:- 1:+ 2:- 3:+
       if(speed_ms > 0) {
