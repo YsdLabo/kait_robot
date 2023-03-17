@@ -221,7 +221,6 @@ private:
 	{
 		std_srvs::Empty emp;
 		return clientStoppedState.call(emp);
-		//return motor_controller.check_stopped_motors();
 	}
 	void start_steering()
 	{
@@ -229,7 +228,6 @@ private:
 		driving_state.request.steering = (n==0?0:(n-1)/2);
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
-		//motor_controller.steer(static_cast<double>(steering_dir_now));
 	}
 	void start_running()
 	{
@@ -237,14 +235,12 @@ private:
 		driving_state.request.steering = (n==0?0:(n-1)/2);
 		driving_state.request.speed = speed;
 		clientDrivingState.call(driving_state);
-		//motor_controller.move(static_cast<double>(steering_dir_now), speed);
 	}
 	void stop_running()
 	{
 		driving_state.request.steering = static_cast<int>(E_STEERING::DIRECTION_STOP);
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
-		//motor_controller.stop();
 	}
 	
 	// アイドリング中
@@ -276,7 +272,7 @@ private:
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			//if(check_all_motors_stopped()) 
+			if(check_all_motors_stopped()) 
 			{
 				if(course_changed()) main_state = E_STATE::STEERING;
 				else main_state = E_STATE::RUNNING;
@@ -297,7 +293,7 @@ private:
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			//start_running();
+			start_running();
 			if(course_changed()) {
 				main_state = E_STATE::STOPPING;
 				action = E_ACTION::EXIT;
@@ -313,11 +309,11 @@ private:
 	{
 		if(action == E_ACTION::ENTRY) {
 			NODELET_INFO("[State] Stopping");
-			//stop_running();
+			stop_running();
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			//if(check_all_motors_stopped()) 
+			if(check_all_motors_stopped()) 
 			{
 				if(go_to_stop()) main_state = E_STATE::IDLING;
 				else main_state = E_STATE::STEERING;
