@@ -61,7 +61,10 @@ MotorController::MotorController()
 MotorController::~MotorController()
 {
   ics_close(&ics_data);
-  for(int i=0;i<4;i++) piezo[i].close();
+  for(int i=0;i<4;i++) {
+    piezo[i].stop();
+  	piezo[i].close();
+  }
 }
 
 void MotorController::steering(int next)
@@ -74,7 +77,7 @@ void MotorController::steering(int next)
     int amount = steering_speed[steer_last][steer_next][i];
     drive_servo(i, steering_angle[steer_next][i], amount*20);
     if(check_servo_stop(i)) drive_piezo(i, 0);
-    else drive_piezo(i, amount*500);
+    else drive_piezo(i, amount*500+sign(amount)*3000);
   }
   
   steer_now = steer_next;
@@ -110,5 +113,16 @@ void MotorController::running(double speed_ms)
       }
     }
   }     
+}
+
+void MotorController::go_to_home()
+{
+  for(int i=0;i<4;i++) {
+    int pos = ics_get_position(&ics_data, i+1);
+    int pulse = 7500 - pos;//0:-+, 1:--, 2:--, 3:-+
+    if(i==0 || i==3) drive_piezo(i, sign(pulse)*(-3000));
+    else drive_piezo(i, sign(pulse)*3000);
+    drive_servo(i, pulse, 20);
+  }
 }
 

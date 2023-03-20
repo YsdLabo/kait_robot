@@ -32,6 +32,7 @@ namespace driving_controller_ns
       serverDrivingState = nh.advertiseService("DrivingState", &SteeringManager::driving_state_service, this);
       serverStoppedState = nh.advertiseService("StoppedState", &SteeringManager::stopped_state_service, this);
       motor_loop = nh.createTimer(ros::Duration(0.01), &SteeringManager::motor_loop_callback, this);
+      motor.go_to_home();
     }
   };
   

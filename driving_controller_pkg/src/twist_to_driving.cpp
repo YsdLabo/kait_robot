@@ -12,7 +12,7 @@ namespace driving_controller_ns
 
 enum class E_STEERING
 {
-	NONE,
+	NONE = -1,
 	DIRECTION_STOP = 0,
 	DIRECTION_F = 1,
 	DIRECTION_B = 2,
@@ -89,6 +89,10 @@ public:
 		
 		clientDrivingState = nh.serviceClient<driving_controller_pkg::DrivingState>("DrivingState");
 		clientStoppedState = nh.serviceClient<std_srvs::Empty>("StoppedState");
+		
+		course = 0.0;
+		speed = 0.0;
+		rotation = 0.0;
 	}
 
 private:
@@ -120,7 +124,8 @@ private:
 			action = E_ACTION::ENTRY;
 			steering_dir_now = E_STEERING::DIRECTION_STOP;
 			steering_dir_last = steering_dir_now;
-			start_steering();
+			//home();
+			//start_steering();
 			break;
 		case E_STATE::IDLING:
 			state_idling();
