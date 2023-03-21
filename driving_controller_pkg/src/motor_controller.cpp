@@ -1,6 +1,26 @@
 #include "motor_controller.h"
 
 
+MotorController::MotorController()
+{
+  ics_init(&ics_data);
+  for(int i=0;i<4;i++) piezo[i].open(2*i+1);  // open 2, 4, 6, 8
+  piezo[0].invert();
+  piezo[3].invert();
+//  nh = getNodeHandle();
+  joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback, this);
+  steer_last = steer_now = steer_next = 0;
+}
+  
+MotorController::~MotorController()
+{
+  ics_close(&ics_data);
+  for(int i=0;i<4;i++) {
+    piezo[i].stop();
+  	piezo[i].close();
+  }
+}
+
 void MotorController::drive_servo(int motor_id, int pulse, int speed)
 {
   ics_set_speed(&ics_data, motor_id+1, std::abs(speed));
@@ -47,26 +67,6 @@ void MotorController::joint_states_callback(const sensor_msgs::JointState::Const
   joint_state = *msg;
 }
 
-MotorController::MotorController()
-{
-  ics_init(&ics_data);
-  for(int i=0;i<4;i++) piezo[i].open(2*i+1);  // open 2, 4, 6, 8
-  piezo[0].invert();
-  piezo[3].invert();
-//  nh = getNodeHandle();
-  joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback, this);
-  steer_last = steer_now = steer_next = 0;
-}
-  
-MotorController::~MotorController()
-{
-  ics_close(&ics_data);
-  for(int i=0;i<4;i++) {
-    piezo[i].stop();
-  	piezo[i].close();
-  }
-}
-
 void MotorController::steering(int next)
 {
   steer_next = next;
@@ -101,16 +101,8 @@ void MotorController::running(double speed_ms)
     }
     // L, R, RotL, RotR
     else {
-      // L,Rot.L  0:- 1:+ 2:- 3:+
-      if(speed_ms > 0) {
-        if(i%2 == 0) drive_piezo(i, -1*(int)output[i]);
-        else drive_piezo(i, (int)output[i]);
-      }
-      // R,Rot.R  0:+ 1:- 2:+ 3:-
-      else {
-        if(i%2 == 0) drive_piezo(i, (int)output[i]);
-        else drive_piezo(i, -1*(int)output[i]);
-      }
+      if(i%2 == 0) drive_piezo(i, -1*sign(speed_ms)*(int)output[i]);
+      else drive_piezo(i, sign(speed_ms)*(int)output[i]);
     }
   }     
 }
@@ -122,7 +114,7 @@ void MotorController::go_to_home()
     int pulse = 7500 - pos;//0:-+, 1:--, 2:--, 3:-+
     if(i==0 || i==3) drive_piezo(i, sign(pulse)*(-3000));
     else drive_piezo(i, sign(pulse)*3000);
-    drive_servo(i, pulse, 20);
+    drive_servo(i, 7500, 20);
   }
 }
 
