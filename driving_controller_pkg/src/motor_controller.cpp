@@ -6,15 +6,17 @@ namespace driving_controller_ns
 MotorController::MotorController()
 {
   ics_init(&ics_data);
-  for(int i=0;i<4;i++) piezo[i].open(2*i+1);  // open 2, 4, 6, 8
+  piezo[0].open(1);  // motor 2
   piezo[0].invert();
+  piezo[1].open(3);  // motor 4
+  piezo[2].open(5);  // motor 6
+  piezo[3].open(7);  // motor 8
   piezo[3].invert();
+  
   for(int i=0;i<4;i++) output[i] = 0;
-  //nh = getNodeHandle();
+
   joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback, this);
   steer_last = steer_now = steer_next = 0;
-  //joint_state.header.seq = 0;
-  //go_to_home();
 }
 
 MotorController::~MotorController()
@@ -71,9 +73,7 @@ bool MotorController::check_all_piezos_stop()
     }
   //printf(" %d\n", cnt);
   }
-  if(cnt == 4) {
-  	sum ++;
-  }
+  if(cnt == 4) sum ++;
   else sum = 0;
 
   if(sum >= 5) {
