@@ -94,6 +94,11 @@ public:
 		speed = 0.0;
 		rotation = 0.0;
 	}
+	
+	~TwistToDriving()
+	{
+		stop_running();
+	}
 
 private:
 	void cmd_vel_callback(const geometry_msgs::Twist::ConstPtr& msg)
@@ -124,7 +129,6 @@ private:
 			action = E_ACTION::ENTRY;
 			steering_dir_now = E_STEERING::DIRECTION_STOP;
 			steering_dir_last = steering_dir_now;
-			//home();
 			//start_steering();
 			break;
 		case E_STATE::IDLING:
@@ -225,25 +229,38 @@ private:
 	bool check_all_motors_stopped()
 	{
 		std_srvs::Empty emp;
-		return clientStoppedState.call(emp);
+		bool tmp = clientStoppedState.call(emp);
+		return tmp;
+	}
+	void start_idling()
+	{
+		driving_state.request.state = 0;
+		driving_state.request.steering = 0;
+		driving_state.request.speed = 0;
+		clientDrivingState.call(driving_state);
 	}
 	void start_steering()
 	{
 		int n = static_cast<int>(steering_dir_now);
-		driving_state.request.steering = (n==0?0:(n-1)/2);
+		driving_state.request.state = 1;
+		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
 	}
 	void start_running()
 	{
 		int n = static_cast<int>(steering_dir_now);
-		driving_state.request.steering = (n==0?0:(n-1)/2);
-		driving_state.request.speed = speed;
+		driving_state.request.state = 2;
+		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
+		if(rotation_is_zero()) driving_state.request.speed = speed;
+		else driving_state.request.speed = rotation * 0.3328;
 		clientDrivingState.call(driving_state);
 	}
 	void stop_running()
 	{
-		driving_state.request.steering = static_cast<int>(E_STEERING::DIRECTION_STOP);
+		int n = static_cast<int>(steering_dir_now);
+		driving_state.request.state = 3;
+		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
 	}
@@ -254,6 +271,7 @@ private:
 		if(action == E_ACTION::ENTRY) {
 			NODELET_INFO("[State] Idling");
 			store_current_steering_dir();
+			start_idling();
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
@@ -270,16 +288,25 @@ private:
 	// 操舵中
 	void state_steering()
 	{
+		static int init_flag = 0;
 		if(action == E_ACTION::ENTRY) {
-			NODELET_INFO("[State] Steering: %d", static_cast<int>(steering_dir_now));
-			store_current_steering_dir();
-			start_steering();
-			action = E_ACTION::DO;
+			NODELET_INFO("[State] Steering");
+			//if(init_flag == 0) {
+				store_current_steering_dir();
+				start_steering();
+				init_flag = 1;
+			//}
+			//else {
+				action = E_ACTION::DO;
+				init_flag = 0;
+			//}
+			
 		}
 		if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
-				if(course_changed()) main_state = E_STATE::STEERING;
+				if(go_to_stop()) main_state = E_STATE::IDLING;
+				else if(course_changed()) main_state = E_STATE::STEERING;
 				else main_state = E_STATE::RUNNING;
 				action = E_ACTION::EXIT;
 			}
@@ -320,12 +347,14 @@ private:
 		if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
-				if(go_to_stop()) main_state = E_STATE::IDLING;
-				else main_state = E_STATE::STEERING;
+				//if(go_to_stop()) main_state = E_STATE::IDLING;
+				//else 
+				main_state = E_STATE::STEERING;
 				action = E_ACTION::EXIT;
 			}
 		}
 		if(action == E_ACTION::EXIT) {
+			steering_dir_now = E_STEERING::DIRECTION_STOP;
 			action = E_ACTION::ENTRY;
 		}
 	}

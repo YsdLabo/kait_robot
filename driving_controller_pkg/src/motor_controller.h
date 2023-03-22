@@ -2,9 +2,14 @@
 #define _MOTOR_CONTROLLER_H_
 
 #include <ros/ros.h>
+#include <nodelet/nodelet.h>
+#include<pluginlib/class_list_macros.h>
 #include <sensor_msgs/JointState.h>
 #include "ics.h"
 #include "piezo_sonic.h"
+
+namespace driving_controller_ns
+{
 
 class MotorController
 {
@@ -34,12 +39,13 @@ class MotorController
   // for running
   static constexpr double  alpha = 0.9;
   static constexpr double  beta = 0.95;
-  static constexpr double  mps_to_digit = 1000.0;
+  static constexpr double  mps_to_digit = 4000.0;
   double output[4];
   
   // Subscribe joint state
   ros::NodeHandle nh;
   ros::Subscriber joint_states_sub;
+
   sensor_msgs::JointState joint_state;
   void joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg);
   
@@ -50,14 +56,16 @@ class MotorController
   
   public:
   MotorController();
-  ~MotorController();  
+  ~MotorController();
+    
   void steering(int steer_next);
   void running(double speed_ms);
-  void go_to_home();
+  bool go_to_home();
 
   bool check_servo_stop(int id);
   bool check_all_servos_stop();
   bool check_all_piezos_stop();
 };
 
+}
 #endif

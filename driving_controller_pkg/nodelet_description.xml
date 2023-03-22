@@ -2,11 +2,11 @@
   <class name="nodelet_driving_controller/TwistToDriving"
     type="driving_controller_ns::TwistToDriving"
     base_class_type="nodelet::Nodelet">
-    <description></description>
+    <description>Twist To Driving.</description>
   </class>
   <class name="nodelet_driving_controller/SteeringManager"
     type="driving_controller_ns::SteeringManager"
     base_class_type="nodelet::Nodelet">
-    <description></description>
+    <description>Steering Manager.</description>
   </class>
 </library>

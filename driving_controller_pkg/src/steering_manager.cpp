@@ -17,6 +17,8 @@ namespace driving_controller_ns
     ros::Timer  motor_loop;
     
     MotorController motor;
+    
+    int driving_state;
     int steering_dir;
     double driving_speed;
     bool stop_flag = true;
@@ -29,18 +31,20 @@ namespace driving_controller_ns
     void onInit()
     {
       nh = getNodeHandle();
+      motor.go_to_home();
       serverDrivingState = nh.advertiseService("DrivingState", &SteeringManager::driving_state_service, this);
       serverStoppedState = nh.advertiseService("StoppedState", &SteeringManager::stopped_state_service, this);
       motor_loop = nh.createTimer(ros::Duration(0.01), &SteeringManager::motor_loop_callback, this);
-      motor.go_to_home();
     }
   };
   
   // Service
   bool SteeringManager::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
   {
+    driving_state = req.state;
     steering_dir = req.steering;
     driving_speed = req.speed;
+    //NODELET_INFO("get : %d : %lf", steering_dir, driving_speed);
     return true;
   }
   
@@ -53,14 +57,16 @@ namespace driving_controller_ns
   void SteeringManager::motor_loop_callback(const ros::TimerEvent& e)
   {
     // Steering
-    if(std::fabs(driving_speed) < 0.01)
+    if(driving_state == 1)
     {
       motor.steering(steering_dir);
     }
     // Running
-    else{
+    else if (driving_state == 2 || driving_state == 3)
+    {
       motor.running(driving_speed);
     }
+    
     // check
     if(motor.check_all_servos_stop() && motor.check_all_piezos_stop()) stop_flag = true;
     else stop_flag = false;
