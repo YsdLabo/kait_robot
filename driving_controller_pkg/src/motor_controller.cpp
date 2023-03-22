@@ -67,7 +67,7 @@ bool MotorController::check_all_piezos_stop()
   //printf("check velocity  ");
     for(int i=1;i<8;i+=2) {
       //printf("%lf :", joint_state.velocity[i]*M_PI*0.05);
-      if(joint_state.velocity[i] < 0.01) cnt++;
+      if(std::fabs(joint_state.velocity[i]) < 0.01) cnt++;
     }
   //printf(" %d\n", cnt);
   }
@@ -113,7 +113,6 @@ void MotorController::running(double speed_ms)
   for(int i=0;i<4;i++) {
     if(speed_d == 0) output[i] = beta * output[i] + (1.0-beta) * speed_d * rate[i];  // when to stop
     else output[i] = alpha * output[i] + (1.0-alpha) * speed_d * rate[i];    // when to accelerate
-    if(std::fabs(output[i]) < 100) output[i] = 0;
   }
   printf("desired velocity   %lf : ", speed_d);
   for(int i=0;i<4;i++) {
