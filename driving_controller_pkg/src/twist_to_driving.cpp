@@ -114,7 +114,7 @@ private:
 		rotation = msg->angular.z;
 		if(std::fabs(rotation) < MIN_ROTATION) rotation = 0.0;
 		else speed = (std::sqrt(2) * 0.2 + 0.05) * rotation;
-		NODELET_INFO("%lf:%lf:%lf", course, speed, rotation);
+		//NODELET_INFO("%lf:%lf:%lf", course, speed, rotation);
 	}
 
 	// Main Loop

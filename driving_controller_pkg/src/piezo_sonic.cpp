@@ -87,7 +87,7 @@ void PiezoSonic::close()
 
 int PiezoSonic::move(int _speed)
 {
-	uint16_t buf = 0;
+	uint16_t cmd = 0;
 	int speed = (inversion?-_speed:_speed);
 
 	if(handle != NULL) {
@@ -99,14 +99,12 @@ int PiezoSonic::move(int _speed)
 			write(0x36, 0);
 		}
 		else {
-			if(speed < 0) {
-				buf = 0x2000;	// CCW
-				speed *= -1;
-			}
-			else buf = 0x4000;	// CW
+			if(speed < 0) cmd = 0x2000;	// CCW
+			else cmd = 0x4000;	// CW
+			speed = std::abs(speed);
 			if(speed > 0x0FFF) speed = 0x0FFF;
-			buf |= speed & 0x0FFF;
-			write(0x36, buf);
+			cmd |= speed & 0x0FFF;
+			write(0x36, cmd);
 		}
 		return 0;
    	}

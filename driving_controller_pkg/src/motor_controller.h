@@ -36,10 +36,15 @@ class MotorController
   ICSData ics_data;
   PiezoSonic piezo[4];
   
+  // for steering
+  double piezo_goal[4];
+  bool first_steering = true;
+  double Kp[4] = {1800, 1000, 1500, 1800};
+  
   // for running
   static constexpr double  alpha = 0.9;
   static constexpr double  beta = 0.95;
-  static constexpr double  mps_to_digit = 4000.0;
+  static constexpr double  mps_to_digit = 3000.0;
   double output[4];
   
   // Subscribe joint state
@@ -49,8 +54,8 @@ class MotorController
   sensor_msgs::JointState joint_state;
   void joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg);
   
-  void drive_servo(int motor_id, int angle, int speed);
-  void drive_piezo(int motor_id, int speed);
+  void drive_servo(int servo_id, int angle, int speed);
+  void drive_piezo(int piezo_id, int speed);
   
   int sign(int val) { return (val>0)-(val<0); }
   
@@ -62,9 +67,12 @@ class MotorController
   void running(double speed_ms);
   bool go_to_home();
 
-  bool check_servo_stop(int id);
+  bool check_servo_stop(int servo_id);
   bool check_all_servos_stop();
   bool check_all_piezos_stop();
+  void set_piezo_goal_position(int piezo_id, int amount);
+  bool check_piezo_stop(int piezo_id);
+  void steering_stop();
 };
 
 }

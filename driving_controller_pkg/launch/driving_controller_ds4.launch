@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <include file="$(find driving_controller_pkg)/launch/driving_controller.launch"/>
+  <include file="$(find ds4_driver)/launch/ds4_twist.launch"/>
+  <!--include file="$(find ds4_control_pkg)/launch/ds4_wired_control.launch"/-->
+</launch>

@@ -13,6 +13,31 @@ MotorController::MotorController()
   piezo[3].open(7);  // motor 8
   piezo[3].invert();
   
+  piezo[0].config(0x00, 0x2A00);  // CW High Frequency 42.0Hz
+  piezo[0].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
+  piezo[0].config(0x08, 0x2A00);  // CCW High Frequency 42.0Hz
+  piezo[0].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
+  
+  piezo[1].config(0x00, 0x2805);  // CW High Frequency 40.5Hz
+  piezo[1].config(0x02, 0x2C00);  // CW Low Frequency 44.0Hz
+  piezo[1].config(0x08, 0x2805);  // CCW High Frequency 40.5Hz
+  piezo[1].config(0x0A, 0x2C00);  // CCW Low Frequency 44.0Hz
+
+  piezo[2].config(0x00, 0x2A00);  // CW High Frequency 42.0Hz
+  piezo[2].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
+  piezo[2].config(0x08, 0x2A00);  // CCW High Frequency 42.0Hz
+  piezo[2].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
+
+  piezo[3].config(0x00, 0x2A00);  // CW High Frequency 42.0Hz
+  piezo[3].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
+  piezo[3].config(0x08, 0x2A00);  // CCW High Frequency 42.0Hz
+  piezo[3].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
+
+  for(int i=0;i<4;i++) {
+    piezo[i].config(0x04, 0x2400);  // CW Phase 36.0
+    piezo[i].config(0x0C, 0x2400);  // CCW Phase 36.0
+  }
+
   for(int i=0;i<4;i++) output[i] = 0;
 
   joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback, this);
@@ -28,26 +53,28 @@ MotorController::~MotorController()
   }
 }
   
-void MotorController::drive_servo(int motor_id, int pulse, int speed)
+void MotorController::drive_servo(int servo_id, int pulse, int speed)
 {
-  ics_set_speed(&ics_data, motor_id+1, std::abs(speed));
-  ics_pos(&ics_data, motor_id+1, pulse);
+  ics_set_speed(&ics_data, servo_id+1, std::abs(speed));
+  ics_pos(&ics_data, servo_id+1, pulse);
 }
   
-void MotorController::drive_piezo(int motor_id, int speed)
+void MotorController::drive_piezo(int piezo_id, int speed)
 {
   int speed_m = speed;
   if(speed > 4000) speed_m = 4000;
   if(speed < -4000) speed_m = -4000;
   if(std::abs(speed) < 100) speed_m = 0;
-  piezo[motor_id].move(speed_m);
+  piezo[piezo_id].move(speed_m);
+//  if(joint_state.velocity.size() > 0)
+//    printf("%d : %d : %lf\n", piezo_id, speed_m, joint_state.velocity[2*piezo_id+1]);
 }
 
-bool MotorController::check_servo_stop(int motor_id)
+bool MotorController::check_servo_stop(int servo_id)
 {
-  int pos = ics_get_position(&ics_data, motor_id+1);
-//  printf("%d : %d    %d\n", motor_id+1, pos, abs(pos - steering_angle[steer_next][motor_id]));
-  if(std::abs(pos - steering_angle[steer_next][motor_id]) < 20) return true;
+  int cur_pos = ics_get_position(&ics_data, servo_id+1);
+  printf("%d : %d    %d\n", servo_id+1, cur_pos, abs(cur_pos - steering_angle[steer_next][servo_id]));
+  if(std::abs(cur_pos - steering_angle[steer_next][servo_id]) < 60) return true;
   return false;
 }
 
@@ -61,17 +88,31 @@ bool MotorController::check_all_servos_stop()
   return false;
 }
 
+void MotorController::set_piezo_goal_position(int piezo_id, int amount)
+{
+  double cur_pos = joint_state.position[2*piezo_id+1];
+  piezo_goal[piezo_id] = cur_pos + amount * M_PI * 0.25;
+//  printf("id: %d  start: %lf - goal: %lf  = %lf\n", piezo_id, cur_pos, piezo_goal[piezo_id], piezo_goal[piezo_id]-cur_pos);
+}
+
+bool MotorController::check_piezo_stop(int piezo_id)
+{
+  double cur_pos = joint_state.position[2*piezo_id+1];
+  double err = cur_pos - piezo_goal[piezo_id];
+//  printf("%lf : ", err);
+  if(std::fabs(err) < 0.03) return true;
+  return false;
+}
+
 bool MotorController::check_all_piezos_stop()
 {
   static int sum = 0;
   int cnt = 0;
   if(joint_state.header.seq > 0) {
-  //printf("check velocity  ");
-    for(int i=1;i<8;i+=2) {
-      //printf("%lf :", joint_state.velocity[i]*M_PI*0.05);
-      if(std::fabs(joint_state.velocity[i]) < 0.01) cnt++;
+    for(int i=0;i<4;i++) {
+      if(std::fabs(joint_state.velocity[2*i+1]) < 0.01) cnt++;
+//      if(check_piezo_stop(i)) cnt++;
     }
-  //printf(" %d\n", cnt);
   }
   if(cnt == 4) sum ++;
   else sum = 0;
@@ -90,17 +131,33 @@ void MotorController::joint_states_callback(const sensor_msgs::JointState::Const
 
 void MotorController::steering(int next)
 {
-  //printf("Steering : %d\n", next);
+  int amount[4];
+
   steer_next = next;
   if(steer_next != steer_now) {
     steer_last = steer_now;
   }
+
   for(int i=0;i<4;i++) {
-    int amount = steering_speed[steer_last][steer_next][i];
-    drive_servo(i, steering_angle[steer_next][i], amount*20);
-    if(check_servo_stop(i)) drive_piezo(i, 0);
-    else drive_piezo(i, amount*500+sign(amount)*3000);
+    amount[i] = steering_speed[steer_last][steer_next][i];
   }
+  if(first_steering) {
+    for(int i=0;i<4;i++)
+      set_piezo_goal_position(i, amount[i]);
+  	first_steering = false;
+  }
+
+  for(int i=0;i<4;i++) {
+    //int amount = steering_speed[steer_last][steer_next][i];
+    drive_servo(i, steering_angle[steer_next][i], amount[i]*20);
+    double err = piezo_goal[i] - joint_state.position[2*i+1];
+    //if(check_servo_stop(i)) drive_piezo(i, 0);
+    if(check_piezo_stop(i)) drive_piezo(i, 0);
+    //else drive_piezo(i, amount[i]*500+sign(amount[i])*2500);
+    else drive_piezo(i, (int)(Kp[i]*err)+sign(err*100)*200);
+//    printf("%d : ", (int)(Kp[i]*err)+sign(err*100)*200);
+  }
+//  printf("\n");
   
   steer_now = steer_next;
 }
@@ -108,17 +165,17 @@ void MotorController::steering(int next)
 void MotorController::running(double speed_ms)
 {
   double speed_d = speed_ms * mps_to_digit;
-  double rate[] = {1.0, 0.76, 1.03, 1.0};
+  double rate[] = {0.92, 0.90, 1.0, 1.0};
   // Low-pass
   for(int i=0;i<4;i++) {
     if(speed_d == 0) output[i] = beta * output[i] + (1.0-beta) * speed_d * rate[i];  // when to stop
     else output[i] = alpha * output[i] + (1.0-alpha) * speed_d * rate[i];    // when to accelerate
   }
-  printf("desired velocity   %lf : ", speed_d);
-  for(int i=0;i<4;i++) {
-    printf("%d :", (int)output[i]);
-  }
-  printf("\n");
+//  printf("desired velocity   %lf : dir %d : ", speed_d, steer_next);
+//  for(int i=0;i<4;i++) {
+//    printf("%d :", (int)output[i]);
+//  }
+//  printf("\n");
 
   // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
   for(int i=0;i<4;i++) {
@@ -126,34 +183,58 @@ void MotorController::running(double speed_ms)
     if(steer_next < 3) {
       drive_piezo(i, (int)output[i]);
     }
-    // L, R, RotL, RotR (3,4)
+    // L, R (3)
+    else if (steer_next == 3) {
+      if(i==0 || i==2) drive_piezo(i, -1*(int)output[i]);
+      else drive_piezo(i, (int)output[i]);
+    }
+    // RotL, RotR (4)
     else {
-      if(i%2 == 0) drive_piezo(i, -1*sign(speed_ms)*(int)output[i]);
-      else drive_piezo(i, sign(speed_ms)*(int)output[i]);
+      if(i==0 || i==3) drive_piezo(i, -1*(int)output[i]);
+      else drive_piezo(i, (int)output[i]);
     }
   }     
 }
 
 bool MotorController::go_to_home()
 {
+  if(!(joint_state.header.seq > 0)) return false;
+
+  double pos_d[4];
   for(int i=0;i<4;i++) {
     int pos = ics_get_position(&ics_data, i+1);
     int pulse = 7500 - pos;//0:-+, 1:--, 2:--, 3:-+
-    if(i==0 || i==3) drive_piezo(i, sign(pulse)*(-3000));
-    else drive_piezo(i, sign(pulse)*3000);
-    drive_servo(i, 7500, 20);
+    double pos_s = joint_state.position[2*i+1];
+    if(i==0 || i==3)
+      pos_d[i] = -pulse * 135.0 / 4000.0 * M_PI / 180.0 + pos_s;
+    else
+      pos_d[i] = pulse * 135.0 / 4000.0 * M_PI / 180.0 + pos_s;
   }
-  steer_next = 0;
-
-  while(!check_all_servos_stop());
-  printf("servo stop\n");
   
-  for(int i=0;i<4;i++) {
-    drive_piezo(i, 0);
+  while(!check_all_servos_stop()) {
+    for(int i=0;i<4;i++) {
+      drive_servo(i, 7500, 20);
+      double err = pos_d[i] - joint_state.position[2*i+1];
+      drive_piezo(i, (int)(Kp[i]*err)+sign(err*100)*200);
+    }
   }
-  //while(!check_all_piezos_stop());
-  printf("piezo stop\n");
-  return true;
+  
+  if(check_all_servos_stop()) {
+    for(int i=0;i<4;i++) {
+      drive_piezo(i, 0);
+    }
+    printf("I'm ready.\n");
+    steer_last = 0;
+    steer_now = 0;
+    first_steering = true;
+    return true;
+  }
+  return false;
+}
+
+void MotorController::steering_stop()
+{
+  first_steering = true;
 }
 
 }
