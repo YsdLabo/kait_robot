@@ -129,7 +129,6 @@ private:
 			action = E_ACTION::ENTRY;
 			steering_dir_now = E_STEERING::DIRECTION_STOP;
 			steering_dir_last = steering_dir_now;
-			//start_steering();
 			break;
 		case E_STATE::IDLING:
 			state_idling();
@@ -239,7 +238,7 @@ private:
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
 	}
-	void start_steering()
+	void do_steering()
 	{
 		int n = static_cast<int>(steering_dir_now);
 		driving_state.request.state = 1;
@@ -247,7 +246,7 @@ private:
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
 	}
-	void start_running()
+	void do_running()
 	{
 		int n = static_cast<int>(steering_dir_now);
 		driving_state.request.state = 2;
@@ -293,16 +292,17 @@ private:
 			NODELET_INFO("[State] Steering");
 			//if(init_flag == 0) {
 				store_current_steering_dir();
-				start_steering();
-				init_flag = 1;
+				//start_steering();
+				//init_flag = 1;
 			//}
 			//else {
 				action = E_ACTION::DO;
-				init_flag = 0;
+				//init_flag = 0;
 			//}
 			
 		}
 		if(action == E_ACTION::DO) {
+			do_steering();
 			if(check_all_motors_stopped()) 
 			{
 				if(go_to_stop()) main_state = E_STATE::IDLING;
@@ -325,7 +325,7 @@ private:
 			action = E_ACTION::DO;
 		}
 		if(action == E_ACTION::DO) {
-			start_running();
+			do_running();
 			if(course_changed()) {
 				main_state = E_STATE::STOPPING;
 				action = E_ACTION::EXIT;
