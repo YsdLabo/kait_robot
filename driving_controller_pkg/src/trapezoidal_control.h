@@ -60,8 +60,8 @@ public:
 		if(_pos_m != 0.0) pos_m = _pos_m;
 		pos_d = _pos_d;
 		double err = pos_d - pos_m;
-    sign = err > 0.0 ? 1.0 : -1.0;
-    err = sign * err;
+		sign = err > 0.0 ? 1.0 : -1.0;
+		err = sign * err;
 
 		t1 = vel_max / acc_max;
 		t2 = err/vel_max + vel_max/(2.0*acc_max) + vel_max/(2.0*dcc_max);
