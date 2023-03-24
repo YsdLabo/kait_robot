@@ -66,7 +66,7 @@ public:
 		t2 = sign*err/vel_max + vel_max/(2.0*acc_max) + vel_max/(2.0*dcc_max);
 		if(t1 >= t2) {
 			double vel = sqrt(2.0*sign*err*acc_max*dcc_max/(dcc_max-acc_max));
-			if(fabs(vel) < 0.000001) {
+			if(fabs(vel)  0.000001) {
 				t1 = vel / acc_max;
 				t2 = t1;
 				t3 = 2.0 * sign*err / vel;
