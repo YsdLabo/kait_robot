@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <param name="robot_description" command="xacro --inorder '$(find description)/urdf/kait_robot.urdf.xacro'" />
+  <arg name="velodyne_angle" default="0"/>
+
+  <param name="robot_description" command="xacro --inorder '$(find description)/urdf/kait_robot_$(arg velodyne_angle).urdf.xacro'" />
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 </launch>

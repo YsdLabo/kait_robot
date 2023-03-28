@@ -44,7 +44,7 @@ namespace driving_controller_ns
     driving_state = req.state;
     steering_dir = req.steering;
     driving_speed = req.speed;
-    //NODELET_INFO("get : %d : %lf", steering_dir, driving_speed);
+//    NODELET_INFO("get : %d : %d : %lf", driving_state, steering_dir, driving_speed);
     return true;
   }
   
@@ -63,18 +63,27 @@ namespace driving_controller_ns
       // Steering
       if(driving_state == 1)
       {
-        motor.steering(steering_dir);
+        if(motor.steering(steering_dir)) {
+          driving_state = 9;
+          stop_flag = true;
+        }
+        else stop_flag = false;
+
       }
       // Running
       else if (driving_state == 2 || driving_state == 3)
       {
         motor.running(driving_speed);
+        // check
+        if(motor.check_all_servos_stop() && motor.check_all_piezos_stop()) {
+          stop_flag = true;
+        }
+        else stop_flag = false;
       }
-      if(driving_state != 1) motor.steering_stop();
-    
-      // check
-      if(motor.check_all_servos_stop() && motor.check_all_piezos_stop()) stop_flag = true;
-     else stop_flag = false;
+      //if(driving_state != 1) {
+      //  motor.steering_stop();
+      //}
+
     }
   }
 }

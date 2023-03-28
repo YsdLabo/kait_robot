@@ -66,8 +66,8 @@ public:
 		t1 = vel_max / acc_max;
 		t2 = err/vel_max + vel_max/(2.0*acc_max) + vel_max/(2.0*dcc_max);
 		if(t1 >= t2) {
-			double vel = sqrt(2.0*sign*acc_max*dcc_max/(dcc_max-acc_max));
-			if(fabs(vel) > 0.000001) {
+			double vel = sqrt(2.0*err*acc_max*dcc_max/(dcc_max-acc_max));
+			if(std::fabs(vel) > 0.000001) {
 				t1 = vel / acc_max;
 				t2 = t1;
 				t3 = 2.0 * err / vel;
@@ -115,11 +115,13 @@ public:
 				pos_m -= sign*dcc_max*(t3-t_o)*(t3-t_o)/2.0;
 			}
 			else {
-				t1 = -1;
-				t2 = -1;
-				t3 = -1;
-        pos_m = pos_d;
-				finished = true;
+				pos_m = pos_d;
+				if(t > t3 + 0.5) {
+					finished = true;
+					t1 = -1;
+					t2 = -1;
+					t3 = -1;
+				}
 			}
 		}
 		t_o = t;
@@ -213,7 +215,6 @@ public:
 		//pos_m = 0.6 * pos_o + 0.4 * pos_m;
 
 		if(sign==0.0 && vel_d==0.0) finished = true;
-ROS_INFO("%lf  ::  %lf : %lf : %lf  :: finished = %d", dt, vel_d, vel_m, pos_m, finished);
 
 		t_o = t_n;
 

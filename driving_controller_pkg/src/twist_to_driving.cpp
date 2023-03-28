@@ -54,7 +54,7 @@ private:
 	double rotation;
 	
 	// enum
-	enum class E_STATE { NONE, IDLING, STEERING, RUNNING, STOPPING };
+	enum class E_STATE { NONE=-1, IDLING=0, STEERING=1, RUNNING=2, STOPPING=3 };
 	E_STATE main_state = E_STATE::NONE;
 	enum class E_ACTION { NONE, ENTRY, DO, EXIT };
 	E_ACTION action = E_ACTION::NONE;
@@ -233,7 +233,7 @@ private:
 	}
 	void start_idling()
 	{
-		driving_state.request.state = 0;
+		driving_state.request.state = static_cast<int>(E_STATE::IDLING);
 		driving_state.request.steering = 0;
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
@@ -241,7 +241,7 @@ private:
 	void do_steering()
 	{
 		int n = static_cast<int>(steering_dir_now);
-		driving_state.request.state = 1;
+		driving_state.request.state = static_cast<int>(E_STATE::STEERING);
 		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
@@ -249,7 +249,7 @@ private:
 	void do_running()
 	{
 		int n = static_cast<int>(steering_dir_now);
-		driving_state.request.state = 2;
+		driving_state.request.state = static_cast<int>(E_STATE::RUNNING);
 		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
 		if(rotation_is_zero()) driving_state.request.speed = speed;
 		else driving_state.request.speed = rotation * 0.3328;
@@ -258,7 +258,7 @@ private:
 	void stop_running()
 	{
 		int n = static_cast<int>(steering_dir_now);
-		driving_state.request.state = 3;
+		driving_state.request.state = static_cast<int>(E_STATE::STOPPING);
 		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
 		driving_state.request.speed = 0;
 		clientDrivingState.call(driving_state);
@@ -293,20 +293,21 @@ private:
 			//if(init_flag == 0) {
 				store_current_steering_dir();
 				//start_steering();
+			do_steering();
 				//init_flag = 1;
 			//}
 			//else {
 				action = E_ACTION::DO;
 				//init_flag = 0;
 			//}
+			sleep(0.1);
 			
 		}
-		if(action == E_ACTION::DO) {
-			do_steering();
+		else if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
-				if(go_to_stop()) main_state = E_STATE::IDLING;
-				else if(course_changed()) main_state = E_STATE::STEERING;
+				//if(go_to_stop()) main_state = E_STATE::IDLING;
+				if(course_changed()) main_state = E_STATE::STEERING;
 				else main_state = E_STATE::RUNNING;
 				action = E_ACTION::EXIT;
 			}
