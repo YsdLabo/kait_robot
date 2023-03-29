@@ -217,7 +217,7 @@ bool MotorController::steering(int next)
     for(int i=0;i<4;i++) {
       double pos_p = joint_state.position[2*i+1]; // [rad]
       double err = pos_p_m[i] - pos_p;
-      drive_piezo(i, (int)(1.6*Kp[i]*err)+sign(err*100)*200);
+      drive_piezo(i, (int)(Kp[i]*err)+sign(err*100)*200);
       int pos_s_d = (int)(pos_s_m[i] * 180.0 / M_PI * 4000.0 / 135.0) + 7500;
       drive_servo(i, pos_s_d, 100);
       msg.data = pos_p_m[i];
