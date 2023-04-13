@@ -84,7 +84,7 @@ void MotorController::drive_piezo(int piezo_id, int speed)
   if(std::abs(speed) < 100) speed_m = 0;
   piezo[piezo_id].move(speed_m);
 //  if(joint_state.velocity.size() > 0)
-//    printf("%d : %d : %lf\n", piezo_id, speed_m, joint_state.velocity[2*piezo_id+1]);
+//    printf("%d : %d : %lf\n", piezo_id, speed_m, joint_state.velocity[piezo_id]);
 }
 
 bool MotorController::check_servo_stop(int servo_id)
@@ -107,14 +107,14 @@ bool MotorController::check_all_servos_stop()
 
 void MotorController::set_piezo_goal_position(int piezo_id, int amount)
 {
-  double cur_pos = joint_state.position[2*piezo_id+1];
+  double cur_pos = joint_state.position[piezo_id];
   piezo_goal[piezo_id] = cur_pos + amount * M_PI * 0.25;
 //  printf("id: %d  start: %lf - goal: %lf  = %lf\n", piezo_id, cur_pos, piezo_goal[piezo_id], piezo_goal[piezo_id]-cur_pos);
 }
 
 bool MotorController::check_piezo_stop(int piezo_id)
 {
-  double cur_pos = joint_state.position[2*piezo_id+1];
+  double cur_pos = joint_state.position[piezo_id];
   double err = cur_pos - piezo_goal[piezo_id];
 //  printf("%lf : ", err);
   if(std::fabs(err) < 0.03) return true;
@@ -127,7 +127,7 @@ bool MotorController::check_all_piezos_stop()
   int cnt = 0;
   if(joint_state.header.seq > 0) {
     for(int i=0;i<4;i++) {
-      if(std::fabs(joint_state.velocity[2*i+1]) < 0.01) cnt++;
+      if(std::fabs(joint_state.velocity[i]) < 0.01) cnt++;
 //      if(check_piezo_stop(i)) cnt++;
     }
   }
@@ -167,7 +167,7 @@ void MotorController::steering(int next)
   for(int i=0;i<4;i++) {
     //int amount = steering_speed[steer_last][steer_next][i];
     drive_servo(i, steering_angle[steer_next][i], amount[i]*20);
-    double err = piezo_goal[i] - joint_state.position[2*i+1];
+    double err = piezo_goal[i] - joint_state.position[i];
     //if(check_servo_stop(i)) drive_piezo(i, 0);
     if(check_piezo_stop(i)) drive_piezo(i, 0);
     //else drive_piezo(i, amount[i]*500+sign(amount[i])*2500);
@@ -193,7 +193,7 @@ bool MotorController::steering(int next)
   if(steering_flag == false)
   {
     for(int i=0;i<4;i++) {
-      pos_p_m[i] = joint_state.position[2*i+1]; // [rad]
+      pos_p_m[i] = joint_state.position[i]; // [rad]
       pos_s_m[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]
       double pos_s_d = (steering_angle[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]
       trape[i].Init(pos_s_d, pos_s_m[i]);
@@ -215,7 +215,7 @@ bool MotorController::steering(int next)
     }
       
     for(int i=0;i<4;i++) {
-      double pos_p = joint_state.position[2*i+1]; // [rad]
+      double pos_p = joint_state.position[i]; // [rad]
       double err = pos_p_m[i] - pos_p;
       drive_piezo(i, (int)(Kp[i]*err)+sign(err*100)*200);
       int pos_s_d = (int)(pos_s_m[i] * 180.0 / M_PI * 4000.0 / 135.0) + 7500;
@@ -276,7 +276,7 @@ bool MotorController::go_to_home()
   for(int i=0;i<4;i++) {
     int pos = ics_get_position(&ics_data, i+1);
     int pulse = 7500 - pos;//0:-+, 1:--, 2:--, 3:-+
-    double pos_s = joint_state.position[2*i+1];
+    double pos_s = joint_state.position[i];
     if(i==0 || i==3)
       pos_d[i] = -pulse * 135.0 / 4000.0 * M_PI / 180.0 + pos_s;
     else
@@ -285,7 +285,7 @@ bool MotorController::go_to_home()
   
   for(int i=0;i<4;i++) {
     drive_servo(i, 7500, 20);
-    double err = pos_d[i] - joint_state.position[2*i+1];
+    double err = pos_d[i] - joint_state.position[i];
     drive_piezo(i, (int)(Kp[i]*err)+sign(err*100)*200);
   }
   */
