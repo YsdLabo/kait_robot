@@ -1,13 +1,18 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="manager_name" default="driving_controller_nodelet_manager"/>
+  <arg name="wheel_states_name" default="wheel_states"/>
   
-  <include file="$(find encoder_control_pkg)/launch/encoder_reader.launch"/>
+  <include file="$(find encoder_control_pkg)/launch/encoder_reader.launch">
+    <arg name="joint_states_name" value="$(arg wheel_states_name)"/>
+  </include>
 
   <node pkg="nodelet" type="nodelet" args="manager" name="$(arg manager_name)" output="screen"/>
   
   <node pkg="nodelet" type="nodelet" args="load nodelet_driving_controller/TwistToDriving $(arg manager_name)" name="twist_to_driving_loader" output="screen" />
   
-  <node pkg="nodelet" type="nodelet" args="load nodelet_driving_controller/SteeringManager $(arg manager_name)" name="steering_manager_loader" output="screen" />
+  <node pkg="nodelet" type="nodelet" args="load nodelet_driving_controller/SteeringManager $(arg manager_name)" name="steering_manager_loader" output="screen" >
+    <remap from="/kait_robot/joint_states" to="/kait_robot/$(arg wheel_states_name)"/>
+  </node>
 
 </launch>
