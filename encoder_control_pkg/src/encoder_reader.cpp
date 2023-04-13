@@ -2,7 +2,7 @@
 #include<sensor_msgs/JointState.h>
 #include<std_msgs/Int32MultiArray.h>
 
-#define  MOTOR_NUMS  8
+#define  MOTOR_NUMS  4
 
 std_msgs::Int32MultiArray  enc_data;
 sensor_msgs::JointState joint_state;
@@ -19,14 +19,20 @@ void encoderCallback(const std_msgs::Int32MultiArray::ConstPtr& msg)
 {
 	enc_data = *msg;
 
-	enc_count[0] += enc_data.data[0];    // axle_fl
-	enc_count[1] -= enc_data.data[1];    // wheel_fl
-	enc_count[2] += enc_data.data[2];    // axle_fr
-	enc_count[3] += enc_data.data[3];    // wheel_fr
-	enc_count[4] += enc_data.data[4];    // axle_br
-	enc_count[5] += enc_data.data[5];    // wheel_br
-	enc_count[6] += enc_data.data[6];    // axle_bl
-	enc_count[7] -= enc_data.data[7];    // wheel_bl
+	enc_count[0] -= enc_data.data[1];    // wheel_fl
+	enc_count[1] += enc_data.data[3];    // wheel_fr
+	enc_count[2] += enc_data.data[5];    // wheel_br
+	enc_count[3] -= enc_data.data[7];    // wheel_bl
+	
+	//old
+	//enc_count[0] += enc_data.data[0];    // axle_fl
+	//enc_count[1] -= enc_data.data[1];    // wheel_fl
+	//enc_count[2] += enc_data.data[2];    // axle_fr
+	//enc_count[3] += enc_data.data[3];    // wheel_fr
+	//enc_count[4] += enc_data.data[4];    // axle_br
+	//enc_count[5] += enc_data.data[5];    // wheel_br
+	//enc_count[6] += enc_data.data[6];    // axle_bl
+	//enc_count[7] -= enc_data.data[7];    // wheel_bl
 }
 
 void timerCallback(const ros::TimerEvent& e)
@@ -40,18 +46,24 @@ void timerCallback(const ros::TimerEvent& e)
 	joint_state.position.resize(MOTOR_NUMS);
 	joint_state.velocity.resize(MOTOR_NUMS);
 
-	joint_state.name[0] ="axle_fl";
-	joint_state.name[1] ="wheel_fl";
-	joint_state.name[2] ="axle_fr";
-	joint_state.name[3] ="wheel_fr";
-	joint_state.name[4] ="axle_br";
-	joint_state.name[5] ="wheel_br";
-	joint_state.name[6] ="axle_bl";
-	joint_state.name[7] ="wheel_bl";
+	joint_state.name[0] ="wheel_fl";
+	joint_state.name[1] ="wheel_fr";
+	joint_state.name[2] ="wheel_br";
+	joint_state.name[3] ="wheel_bl";
 
+	// old
+	//joint_state.name[0] ="axle_fl";
+	//joint_state.name[1] ="wheel_fl";
+	//joint_state.name[2] ="axle_fr";
+	//joint_state.name[3] ="wheel_fr";
+	//joint_state.name[4] ="axle_br";
+	//joint_state.name[5] ="wheel_br";
+	//joint_state.name[6] ="axle_bl";
+	//joint_state.name[7] ="wheel_bl";
+
+	double dt = (current_time - last_time).toSec();
 	for(int i=0;i<MOTOR_NUMS;i++) {
 		joint_state.position[i] = current_angle[i];
-		double dt = (current_time - last_time).toSec();
 		joint_state.velocity[i] = (current_angle[i] - last_angle[i]) / dt;
 		last_angle[i] = current_angle[i];
 	}
