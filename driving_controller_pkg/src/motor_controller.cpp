@@ -89,9 +89,9 @@ void MotorController::drive_piezo(int piezo_id, int speed)
 
 bool MotorController::check_servo_stop(int servo_id)
 {
-  int cur_pos = ics_get_position(&ics_data, servo_id+1);
-//  printf("%d : %d    %d\n", servo_id+1, cur_pos, abs(cur_pos - steering_angle[steer_next][servo_id]));
-  if(std::abs(cur_pos - steering_angle[steer_next][servo_id]) < 60) return true;
+  int cur_value = ics_get_position(&ics_data, servo_id+1);
+//  printf("%d : %d    %d\n", servo_id+1, cur_pos, abs(cur_pos - steering_value[steer_next][servo_id]));
+  if(std::abs(cur_value - steering_value[steer_next][servo_id]) < 60) return true;
   return false;
 }
 
@@ -143,6 +143,9 @@ bool MotorController::check_all_piezos_stop()
 void MotorController::joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg)
 {
   wheel_state = *msg;
+  
+  for(int i=0;i<4;i++)
+    steering_angle_now[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
 }
 
 /*
@@ -166,7 +169,7 @@ void MotorController::steering(int next)
 
   for(int i=0;i<4;i++) {
     //int amount = steering_speed[steer_last][steer_next][i];
-    drive_servo(i, steering_angle[steer_next][i], amount[i]*20);
+    drive_servo(i, steering_value[steer_next][i], amount[i]*20);
     double err = piezo_goal[i] - wheel_state.position[i];
     //if(check_servo_stop(i)) drive_piezo(i, 0);
     if(check_piezo_stop(i)) drive_piezo(i, 0);
@@ -195,7 +198,7 @@ bool MotorController::steering(int steer_next_state)
     for(int i=0;i<4;i++) {
       pos_p_m[i] = wheel_state.position[i]; // [rad]　車輪軸の現在角度
       pos_s_m[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の現在角度
-      double pos_s_d = (steering_angle[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の目標角度
+      double pos_s_d = (steering_value[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の目標角度
       trape[i].Init(pos_s_d, pos_s_m[i]);    // 台形速度則の初期化
       pos_s_o[i] = pos_s_m[i];
     }
