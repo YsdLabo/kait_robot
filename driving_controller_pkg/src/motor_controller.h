@@ -58,7 +58,7 @@ class MotorController
   ros::Subscriber joint_states_sub;
   ros::Publisher pub[8];
 
-  sensor_msgs::JointState joint_state;
+  sensor_msgs::JointState wheel_state;
   void joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg);
   
   void drive_servo(int servo_id, int angle, int speed);
