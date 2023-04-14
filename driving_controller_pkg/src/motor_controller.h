@@ -19,7 +19,7 @@ class MotorController
   int steer_now = 0;
   int steer_last = 0;
   int steer_next = 0;
-  int steering_angle[5][4] = {
+  int steering_value[5][4] = {
     {7500, 7500, 7500, 7500},    // 0: Stop, F, B (0,0,0,0)
     {8833, 8833, 8833, 8833},    // 1: FL, BR (45,45,45,45)
     {6167, 6167, 6167, 6167},    // 2: FR, BL (-45,-45,-45,-45)
@@ -33,7 +33,7 @@ class MotorController
     {{-2,-2, 2, 2},{-3,-1, 3, 1},{-1,-3, 1, 3},{ 0, 0, 0, 0},{-1,-1, 1, 1}},
     {{-1,-1, 1, 1},{-2, 0, 2, 0},{ 0,-2, 0, 2},{ 1, 1,-1,-1},{ 0, 0, 0, 0}}
   };
-  int servo_angle_now[4];
+  double steering_angle_now[4];    // [rad]
   
   ICSData ics_data;
   PiezoSonic piezo[4];
