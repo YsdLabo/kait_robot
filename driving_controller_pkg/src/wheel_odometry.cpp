@@ -1,4 +1,4 @@
-void WheelOdometry::run(wheel, steer)
+void WheelOdometry::run(sensor_msgs::JointState& wheel, double steer[4])
 {
 	// Wheel Odometry for 4WS
 	int steering_dir;    // 0:F&B, 1:FL&BR, 2:FR&BL, 3:L&R, 4:Rotation
