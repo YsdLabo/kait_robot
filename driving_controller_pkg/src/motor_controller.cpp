@@ -144,6 +144,8 @@ void MotorController::joint_states_callback(const sensor_msgs::JointState::Const
 {
   wheel_state = *msg;
   
+  // 微小移動量をここで計算
+  
   for(int i=0;i<4;i++)
     steering_angle_now[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
 }
