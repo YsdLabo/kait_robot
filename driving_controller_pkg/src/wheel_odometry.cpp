@@ -2,8 +2,8 @@ class WheelOdometry
 {
 private:
 	double L1 = 0.4 + 0.1;
-	double L2 = + 0.1
-	double L3 = 
+	double L2 = 0.4 * std::sqrt(2) + 0.1;
+	double L3 = 0.2 * std::sqrt(2) + 0.05;
 public:
 };
 
@@ -81,5 +81,7 @@ void WheelOdometry::run(double diff_wheel[4], double steer[4])
 
 void WheelOdometry::publication()
 {
+	geometry_msgs::Odometry odom;
+	odom.header.stamp;
 }
 
