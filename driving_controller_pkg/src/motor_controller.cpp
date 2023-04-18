@@ -142,17 +142,12 @@ bool MotorController::check_all_piezos_stop()
 
 void MotorController::joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg)
 {
-  if(!first_joint_states_callback) {
-    wheel_state = *msg;
+  wheel_state = *msg;
   
-    // 微小移動量をここで計算
-    for(int i=0;i<4;i++) {
-      diff_wheel_state[i] = wheel_state.position[i] - wheel_state_last.position[i];
-      steering_angle_now[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
-    }
+  // 微小移動量をここで計算
+  for(int i=0;i<4;i++) {
+    steering_angle_now[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
   }
-  wheel_state_last = wheel_state;
-  first_joint_states_callback = false;
 }
 
 /*
