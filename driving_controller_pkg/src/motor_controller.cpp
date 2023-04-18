@@ -152,6 +152,7 @@ void MotorController::joint_states_callback(const sensor_msgs::JointState::Const
     }
   }
   wheel_state_last = wheel_state;
+  first_joint_states_callback = false;
 }
 
 /*
