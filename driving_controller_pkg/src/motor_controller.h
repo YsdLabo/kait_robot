@@ -60,6 +60,8 @@ class MotorController
 
   sensor_msgs::JointState wheel_state;
   void joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg);
+  double diff_wheel_state[4];
+  sensor_msgs::JointState wheel_state_last
   
   void drive_servo(int servo_id, int angle, int speed);
   void drive_piezo(int piezo_id, int speed);
