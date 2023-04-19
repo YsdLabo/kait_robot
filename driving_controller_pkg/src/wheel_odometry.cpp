@@ -10,6 +10,10 @@ private:
 	double areaL_F = 3.0 * M_PI / 8.0;
 	double areaL_B = 5.0 * M_PI / 8.0;
 	
+	double cur_x;
+	double cur_y;
+	double cur_th;
+	
 	sensor_msgs::JointState wheel_state_last;
 	bool first_run = true;
 public:
@@ -17,23 +21,24 @@ public:
 	void publication();
 };
 
-void WheelOdometry::run(sensor_msgs::JointState& wheel_state, double steer[4])
+WheelOdometry::WheelOdometry()
 {
-	if(!first_run) {
-		// Wheel Odometry for 4WS
-		int steering_dir;    // 0:F&B, 1:FL&BR, 2:FR&BL, 3:L&R, 4:Rotation
+	cur_x = 0.0;
+	cur_y = 0.0;
+	cur_th = 0.0;
+}
 
-		// F&B
-		if((steer[0] > -22.5 && steer[0] <= 22.5)) steering_dir = 0;
-		// FL&BR
-		else if((steer[0] > -67.5 && steer[0] < -22.5)) steering_dir = 1;
-		// FR&BL
-		else if((steer[0] > 22.5 && steer[0] < 67.5) && (steer[1] < 0)) steering_dir = 2;
-		// L&R
-		else if((steer[0] > 67.5 && steer[0] < 112.5)) steering_dir = 3;
-		// Rotation
-		else if((steer[0] > 22.5 && steer[0] < 67.5) && (steer[1] > 0)) steering_dir = 4;
-		
+void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
+{
+	wheel_state_last = wheel_state;
+}
+
+void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4])
+{
+	double dv;
+	double phi;
+	
+	if(!first_run) {
 		double diff_wheel[4];
 		for(int i=0;i<4;i++) diff_wheel[i] = wheel_state.position[i] - wheel_state_last.position[i];
 		
@@ -45,9 +50,7 @@ void WheelOdometry::run(sensor_msgs::JointState& wheel_state, double steer[4])
 			if(diff_wheel[0] > 0) dth = (diff_wheel[1] - diff_wheel[0]) / L1;
 			// Back
 			else dth = (diff_wheel[3] - diff_wheel[2]) / L1;
-			dv = 0.0;
-			for(int i=0;i<4;i++) dv += diff_wheel[i];
-			dv /= 4.0;
+			dv = (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = 0.0;
 		}
 		// FL & BR
@@ -57,9 +60,7 @@ void WheelOdometry::run(sensor_msgs::JointState& wheel_state, double steer[4])
 			if(diff_wheel[0] > 0) dth = (diff_wheel[1] - diff_whee[3]) / L2;
 			// Backward Right
 			else dth = (diff_wheel[3] - diff_wheel[1]) / L2;
-			dv = 0.0;
-			for(int i=0;i<4;i++) dv += diff_wheel[i];
-			dv /= 4.0;
+			dv = (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = M_PI / 4.0;
 		}
 		// FR & BL
@@ -69,9 +70,7 @@ void WheelOdometry::run(sensor_msgs::JointState& wheel_state, double steer[4])
 			if(diff_wheel[0] > 0) dth = (diff_wheel[2] - diff_whee[0]) / L2;
 			// Backward Left
 			else dth = (diff_wheel[0] - diff_wheel[2]) / L2;
-			dv = 0.0;
-			for(int i=0;i<4;i++) dv += diff_wheel[i];
-			dv /= 4.0;
+			dv = (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = - M_PI / 4.0;
 		}
 		// L & R
@@ -97,15 +96,15 @@ void WheelOdometry::run(sensor_msgs::JointState& wheel_state, double steer[4])
 		cur_x += dv * std::cos(theta + phi);
 		cur_y += dv * std::sin(theta + phi);
 		
-		publication();
+		publication(wheel_state);
 	}
 	wheel_state_last = wheel_state;
 	first_run = false;
 }
 
-void WheelOdometry::publication()
+void WheelOdometry::publication(sensor_msgs::JointState& wheel_state)
 {
 	geometry_msgs::Odometry odom;
-	odom.header.stamp;
+	odom.header.stamp = wheel_state.header.stamp;
 }
 
