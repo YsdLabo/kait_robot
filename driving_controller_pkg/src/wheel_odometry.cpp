@@ -34,7 +34,7 @@ WheelOdometry::WheelOdometry()
 	cur_y = 0.0;
 	cur_th = 0.0;
 	
-	odom_pub = nh.advertise<geometry_msgs::Odometry>("wheel_odom", 1);
+	odom_pub = nh.advertise<geometry_msgs::Odometry>("odom", 1);
 }
 
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
