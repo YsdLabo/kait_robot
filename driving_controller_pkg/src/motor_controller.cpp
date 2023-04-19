@@ -238,6 +238,9 @@ bool MotorController::steering(int steer_next_state)
       pub[i+4].publish(msg);
     }
     
+    // update odom
+    odom.update(wheel_state);
+    
     // 終了判定
     int cnt = 0;
     for(int i=0;i<4;i++) if(trape[i].Finished()) cnt++;
@@ -279,8 +282,8 @@ void MotorController::running(double speed_ms)
       else drive_piezo(i, (int)output[i]);
     }
     // Wheel Odometry
-    
-  }     
+    odom.update(wheel_state, steering_angle_now);
+  }
 }
 
 bool MotorController::go_to_home()
