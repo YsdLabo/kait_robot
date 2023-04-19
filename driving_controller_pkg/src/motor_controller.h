@@ -9,6 +9,7 @@
 #include "ics.h"
 #include "piezo_sonic.h"
 #include "trapezoidal_control.h"
+#include "wheel_odometry.h"
 
 namespace driving_controller_ns
 {
@@ -52,6 +53,9 @@ class MotorController
   static constexpr double  beta = 0.97;
   static constexpr double  mps_to_digit = 2500.0;
   double output[4];
+  
+  // for odometry
+  WheelOdometry odom;
   
   // Subscribe joint state
   ros::NodeHandle nh;
