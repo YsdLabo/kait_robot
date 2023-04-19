@@ -1,6 +1,9 @@
 class WheelOdometry
 {
 private:
+	ros::NodeHandle nh;
+	ros::Publisher odom_pub;
+	
 	double L1 = 0.4 + 0.1;
 	double L2 = 0.4 * std::sqrt(2) + 0.1;
 	double L3 = 0.2 * std::sqrt(2) + 0.05;
@@ -13,11 +16,15 @@ private:
 	double cur_x;
 	double cur_y;
 	double cur_th;
+	double cur_vx;
+	double cur_vy;
+	double cur_w;
 	
 	sensor_msgs::JointState wheel_state_last;
 	bool first_run = true;
 public:
-	void run(sensor_msgs::JointState& wheel_state, double steer[4]);
+	void update(sensor_msgs::JoinState& wheel_state);
+	void update(sensor_msgs::JointState& wheel_state, double steer[4]);
 	void publication();
 };
 
@@ -26,6 +33,8 @@ WheelOdometry::WheelOdometry()
 	cur_x = 0.0;
 	cur_y = 0.0;
 	cur_th = 0.0;
+	
+	odom_pub = nh.advertise<geometry_msgs::Odometry>("wheel_odom", 1);
 }
 
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
@@ -35,10 +44,10 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
 
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4])
 {
-	double dv;
-	double phi;
-	
 	if(!first_run) {
+		double dv;
+		double phi;
+		
 		double diff_wheel[4];
 		for(int i=0;i<4;i++) diff_wheel[i] = wheel_state.position[i] - wheel_state_last.position[i];
 		
@@ -92,9 +101,16 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 			phi = 0.0;
 		}
 		
+		double dx = dv * std::cos(theta + phi);
+		double dy = dv * std::sin(theta + phi);
+		double dt = (wheel_state.header.stamp - wheel_state_last.header.stamp).toSec();
+		cur_vx = dx / dt;
+		cur_vy = dx / dt;
+		cur_w  = dth / dt;
+		
 		cur_th += dth;
-		cur_x += dv * std::cos(theta + phi);
-		cur_y += dv * std::sin(theta + phi);
+		cur_x += dx;
+		cur_y += dy;
 		
 		publication(wheel_state);
 	}
@@ -104,7 +120,21 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 
 void WheelOdometry::publication(sensor_msgs::JointState& wheel_state)
 {
+	// odom
 	geometry_msgs::Odometry odom;
 	odom.header.stamp = wheel_state.header.stamp;
+	odom.header.frame_id = "odom";
+	odom.child_frame_id = "base_link";
+	
+	odom.pose.pose.position.x = cur_x;
+	odom.pose.pose.position.y = cur_y;
+	odom.pose.pose.position.z = 0;
+	odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(cur_th);
+	
+	odom.twist.twist.linear.x = cur_vx;
+	odom.twist.twist.linear.y = cur_vy;
+	odom.twist.twist.angular.z = cur_w;
+	
+	odom_pub.publish(odom);
 }
 
