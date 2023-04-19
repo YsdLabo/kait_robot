@@ -4,14 +4,14 @@ private:
 	ros::NodeHandle nh;
 	ros::Publisher odom_pub;
 	
-	double L1 = 0.4 + 0.1;
-	double L2 = 0.4 * std::sqrt(2) + 0.1;
-	double L3 = 0.2 * std::sqrt(2) + 0.05;
-	double areaR_F = - 3.0 * M_PI / 8.0;
-	double areaF_R = - M_PI / 8.0;
-	double areaF_L = M_PI / 8.0;
-	double areaL_F = 3.0 * M_PI / 8.0;
-	double areaL_B = 5.0 * M_PI / 8.0;
+	static constexpr double L1 = 0.4 + 0.1;
+	static constexpr double L2 = 0.4 * std::sqrt(2) + 0.1;
+	static constexpr double L3 = 0.2 * std::sqrt(2) + 0.05;
+	static constexpr double areaR_F = - 3.0 * M_PI / 8.0;
+	static constexpr double areaF_R = - M_PI / 8.0;
+	static constexpr double areaF_L = M_PI / 8.0;
+	static constexpr double areaL_F = 3.0 * M_PI / 8.0;
+	static constexpr double areaL_B = 5.0 * M_PI / 8.0;
 	
 	double cur_x;
 	double cur_y;
