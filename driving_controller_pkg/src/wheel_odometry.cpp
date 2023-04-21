@@ -1,3 +1,8 @@
+#include <ros/ros.h>
+#include <sensor_msgs/JointState.h>
+#include <nav_msgs/Odometry.h>
+#include <tf/transform_broadcaster.h>
+
 class WheelOdometry
 {
 private:
@@ -14,19 +19,22 @@ private:
 	static constexpr double areaL_B = 5.0 * M_PI / 8.0;
 	static constexpr double wheel_radius = 0.05;
 	
+	ros::Time  curent_time;
 	double cur_x;
 	double cur_y;
 	double cur_th;
 	double cur_vx;
 	double cur_vy;
 	double cur_w;
+	nav_msgs::Odometry odom;
 	
 	sensor_msgs::JointState wheel_state_last;
 	bool first_run = true;
 public:
 	void update(sensor_msgs::JoinState& wheel_state);
 	void update(sensor_msgs::JointState& wheel_state, double steer[4]);
-	void publication();
+	void publish_odom();
+	void publish_tf();
 };
 
 WheelOdometry::WheelOdometry()
@@ -35,12 +43,13 @@ WheelOdometry::WheelOdometry()
 	cur_y = 0.0;
 	cur_th = 0.0;
 	
-	odom_pub = nh.advertise<geometry_msgs::Odometry>("odom", 1);
+	odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 1);
 }
 
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
 {
 	wheel_state_last = wheel_state;
+	first_run = false;
 }
 
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4])
@@ -108,23 +117,24 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		cur_x += dx;
 		cur_y += dy;
 
-		double dt = (wheel_state.header.stamp - wheel_state_last.header.stamp).toSec();
+		curent_time = wheel_state.header.stamp;
+		double dt = (curent_time - wheel_state_last.header.stamp).toSec();
 		cur_vx = dx / dt;
 		cur_vy = dy / dt;
 		cur_w  = dth / dt;
 		
 		
-		publication(wheel_state);
+		publish_odom();
+		publish_tf();
 	}
 	wheel_state_last = wheel_state;
 	first_run = false;
 }
 
-void WheelOdometry::publication(sensor_msgs::JointState& wheel_state)
+void WheelOdometry::publish_odom()
 {
 	// odom
-	geometry_msgs::Odometry odom;
-	odom.header.stamp = wheel_state.header.stamp;
+	odom.header.stamp = curent_time;
 	odom.header.frame_id = "odom";
 	odom.child_frame_id = "base_link";
 	
@@ -154,3 +164,18 @@ void WheelOdometry::publication(sensor_msgs::JointState& wheel_state)
 	odom_pub.publish(odom);
 }
 
+
+void WheelOdometry::publish_tf()
+{
+	geometry_msgs::TransformStamped  tf_trans;
+
+	tf_trans.header.stamp = odom.header.stamp;
+	tf_trans.header.frame_id = odom.header.frame_id;
+	tf_trans.child_frame_id = odom.child_frame_id;
+	tf_trans.transform.translation.x = odom.pose.pose.position.x;
+	tf_trans.transform.translation.y = odom.pose.pose.position.y;
+	tf_trans.transform.translation.z = odom.pose.pose.position.z;
+	tf_trans.transform.rotation = odom.pose.pose.orientation;
+
+	tf_caster.sendTransform(tf_trans);
+}
