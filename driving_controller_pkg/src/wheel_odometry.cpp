@@ -133,9 +133,23 @@ void WheelOdometry::publication(sensor_msgs::JointState& wheel_state)
 	odom.pose.pose.position.z = 0;
 	odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(cur_th);
 	
+	odom.pose.covariance[0] = 0.01;
+	odom.pose.covariance[7] = 0.01;
+	odom.pose.covariance[14] = FLT_MAX;
+	odom.pose.covariance[21] = FLT_MAX;
+	odom.pose.covariance[28] = FLT_MAX;
+	odom.pose.covariance[35] = 0.01;
+	
 	odom.twist.twist.linear.x = cur_vx;
 	odom.twist.twist.linear.y = cur_vy;
 	odom.twist.twist.angular.z = cur_w;
+	
+	odom.twist.covariance[0] = 0.01;
+	odom.twist.covariance[7] = 0.01;
+	odom.twist.covariance[14] = FLT_MAX;
+	odom.twist.covariance[21] = FLT_MAX;
+	odom.twist.covariance[28] = FLT_MAX;
+	odom.twist.covariance[35] = 0.01;
 	
 	odom_pub.publish(odom);
 }
