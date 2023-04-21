@@ -250,6 +250,9 @@ bool MotorController::steering(int steer_next_state)
       return true;
     }
   }
+  // Wheel Odometry
+  odom.update(wheel_state);
+
   steer_now = steer_next;
   return false;
 }
@@ -281,9 +284,9 @@ void MotorController::running(double speed_ms)
       if(i==0 || i==3) drive_piezo(i, -1*(int)output[i]);
       else drive_piezo(i, (int)output[i]);
     }
-    // Wheel Odometry
-    odom.update(wheel_state, steering_angle_now);
   }
+  // Wheel Odometry
+  odom.update(wheel_state, steering_angle_now);
 }
 
 bool MotorController::go_to_home()
