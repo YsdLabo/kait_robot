@@ -12,6 +12,7 @@ private:
 	static constexpr double areaF_L = M_PI / 8.0;
 	static constexpr double areaL_F = 3.0 * M_PI / 8.0;
 	static constexpr double areaL_B = 5.0 * M_PI / 8.0;
+	static constexpr double wheel_radius = 0.05;
 	
 	double cur_x;
 	double cur_y;
@@ -101,16 +102,17 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 			phi = 0.0;
 		}
 		
-		double dx = dv * std::cos(theta + phi);
-		double dy = dv * std::sin(theta + phi);
-		double dt = (wheel_state.header.stamp - wheel_state_last.header.stamp).toSec();
-		cur_vx = dx / dt;
-		cur_vy = dx / dt;
-		cur_w  = dth / dt;
-		
-		cur_th += dth;
+		cur_th += dth * wheel_radius;
+		double dx = dv * std::cos(cur_th + phi) * wheel_radius;
+		double dy = dv * std::sin(cur_th + phi) * wheel_radius;
 		cur_x += dx;
 		cur_y += dy;
+
+		double dt = (wheel_state.header.stamp - wheel_state_last.header.stamp).toSec();
+		cur_vx = dx / dt;
+		cur_vy = dy / dt;
+		cur_w  = dth / dt;
+		
 		
 		publication(wheel_state);
 	}
