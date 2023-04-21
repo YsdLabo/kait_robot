@@ -48,7 +48,7 @@ MotorController::MotorController()
     trape[i].SetVelMax(1.0);
   }
 
-  joint_states_sub = nh.subscribe("/kait_robot/joint_states", 10, &MotorController::joint_states_callback, this);
+  joint_states_sub = nh.subscribe("joint_states", 10, &MotorController::joint_states_callback, this);
   pub[0] = nh.advertise<std_msgs::Float64>("servo0", 1, this);
   pub[1] = nh.advertise<std_msgs::Float64>("servo1", 1, this);
   pub[2] = nh.advertise<std_msgs::Float64>("servo2", 1, this);
@@ -148,6 +148,7 @@ void MotorController::joint_states_callback(const sensor_msgs::JointState::Const
   for(int i=0;i<4;i++) {
     steering_angle_now[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
   }
+  //ROS_INFO("%lf", wheel_state.header.stamp.toSec());
 }
 
 /*
@@ -199,7 +200,8 @@ bool MotorController::steering(int steer_next_state)
   {
     for(int i=0;i<4;i++) {
       pos_p_m[i] = wheel_state.position[i]; // [rad]　車輪軸の現在角度
-      pos_s_m[i] = steering_angle_now[i]; //(ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の現在角度
+      //pos_s_m[i] = steering_angle_now[i];
+      pos_s_m[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の現在角度
       double pos_s_d = (steering_value[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の目標角度
       trape[i].Init(pos_s_d, pos_s_m[i]);    // 台形速度則の初期化
       pos_s_o[i] = pos_s_m[i];
@@ -239,7 +241,7 @@ bool MotorController::steering(int steer_next_state)
     }
     
     // update odom
-    odom.update(wheel_state);
+    //odom.update(wheel_state);
     
     // 終了判定
     int cnt = 0;
@@ -251,7 +253,7 @@ bool MotorController::steering(int steer_next_state)
     }
   }
   // Wheel Odometry
-  odom.update(wheel_state);
+  //odom.update(wheel_state);
 
   steer_now = steer_next;
   return false;
@@ -286,12 +288,12 @@ void MotorController::running(double speed_ms)
     }
   }
   // Wheel Odometry
-  odom.update(wheel_state, steering_angle_now);
+  //odom.update(wheel_state, steering_angle_now);
 }
 
 bool MotorController::go_to_home()
 {
-  if(!(joint_state.header.seq > 0)) return false;
+  if(!(wheel_state.header.seq > 0)) return false;
 /*
   double pos_d[4];
   for(int i=0;i<4;i++) {

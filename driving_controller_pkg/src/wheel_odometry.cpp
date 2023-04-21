@@ -1,12 +1,15 @@
 #include "wheel_odometry.h"
 
+namespace driving_controller_ns
+{
+
 WheelOdometry::WheelOdometry()
 {
 	cur_x = 0.0;
 	cur_y = 0.0;
 	cur_th = 0.0;
 	
-	odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 1);
+	odom_pub = nh.advertise<nav_msgs::Odometry>("odom2", 1);
 }
 
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
@@ -18,7 +21,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4])
 {
 	if(!first_run) {
-		double dv;
+		double dv, dth;
 		double phi;
 		
 		double diff_wheel[4];
@@ -39,7 +42,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		else if(steer[1] > areaF_L && steer[1] < areaL_F && steer[0] < 0.0)
 		{
 			// Forward Left
-			if(diff_wheel[0] > 0) dth = (diff_wheel[1] - diff_whee[3]) / L2;
+			if(diff_wheel[0] > 0) dth = (diff_wheel[1] - diff_wheel[3]) / L2;
 			// Backward Right
 			else dth = (diff_wheel[3] - diff_wheel[1]) / L2;
 			dv = (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
@@ -49,7 +52,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		else if(steer[1] > areaR_F && steer[1] < areaF_R)
 		{
 			// Forward Right
-			if(diff_wheel[0] > 0) dth = (diff_wheel[2] - diff_whee[0]) / L2;
+			if(diff_wheel[0] > 0) dth = (diff_wheel[2] - diff_wheel[0]) / L2;
 			// Backward Left
 			else dth = (diff_wheel[0] - diff_wheel[2]) / L2;
 			dv = (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
@@ -88,7 +91,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		
 		
 		publish_odom();
-		publish_tf();
+		//publish_tf();
 	}
 	wheel_state_last = wheel_state;
 	first_run = false;
@@ -127,8 +130,7 @@ void WheelOdometry::publish_odom()
 	odom_pub.publish(odom);
 }
 
-
-void WheelOdometry::publish_tf()
+/*void WheelOdometry::publish_tf()
 {
 	geometry_msgs::TransformStamped  tf_trans;
 
@@ -140,5 +142,10 @@ void WheelOdometry::publish_tf()
 	tf_trans.transform.translation.z = odom.pose.pose.position.z;
 	tf_trans.transform.rotation = odom.pose.pose.orientation;
 
-	tf_caster.sendTransform(tf_trans);
+	try{
+		tf_caster.sendTransform(tf_trans);	// error
+	}
+	catch(...){};
+}
+*/
 }

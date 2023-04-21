@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="velodyne_angle" default="0"/>
+  <arg name="visual" default="true"/>
+  <arg name="record" default="false"/>
+  <arg name="dst_file" default="test.bag"/>
+  <arg name="dst_full_name" default="/home/kkrt/catkin_ws/src/kait_robot/kait_robot/bag/$(arg dst_file)"/>
+
+  <include file="$(find kkrt_lidar_pkg)/launch/lidars.launch"/>
+  <include file="$(find ros_imu_bno055)/launch/imu_test.launch"/>
+
+  <include file="$(find kait_robot)/launch/kait_description.launch">
+    <arg name="velodyne_angle" value="$(arg velodyne_angle)"/>
+  </include>
+  <include file="$(find my_cartographer)/launch/remote_with_odometry_3d.launch"/>
+  
+  <include file="$(find driving_controller_pkg)/launch/driving_controller.launch"/>
+  <include file="$(find ds4_driver)/launch/ds4_twist.launch"/>
+
+  <group if="$(arg visual)">
+    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-f base_link -d $(find kait_robot)/utils/rviz.rviz"/>
+  </group>
+  
+  <group if="$(arg record)">
+    <node pkg="rosbag" type="record" name="bag_saver" args="-a -q -O $(arg dst_full_name)"/>
+  </group>
+</launch>

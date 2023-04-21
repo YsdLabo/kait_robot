@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "wheel_rotation");
 	ros::NodeHandle nh;
 	ros::Subscriber sub = nh.subscribe("/kait_robot/encoder_count", 100, &encoderCallback);
-	pub = nh.advertise<sensor_msgs::JointState>("/kait_robot/joint_states", 1);
+	pub = nh.advertise<sensor_msgs::JointState>("joint_states", 1);
 	ros::Timer  timer = nh.createTimer(ros::Duration(0.01), &timerCallback);
 
 	ros::spin();

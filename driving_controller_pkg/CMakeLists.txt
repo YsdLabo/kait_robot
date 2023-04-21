@@ -218,6 +218,7 @@ add_library(
   src/motor_controller.cpp
   src/ics.cpp
   src/piezo_sonic.cpp
+  src/wheel_odometry.cpp
 )
 target_link_libraries(
   nodelet_driving_controller

@@ -8,6 +8,6 @@
   </node>
 
   <node pkg="encoder_control_pkg" type="encoder_reader_node" name="encoder_reader" output="screen">
-    <remap from="/kait_robot/joint_states" value="/kait_robot/$(arg joint_states_name)"/>
+    <remap from="joint_states" to="$(arg joint_states_name)"/>
   </node>
 </launch>
