@@ -87,6 +87,7 @@ class MotorController
   void set_piezo_goal_position(int piezo_id, int amount);
   bool check_piezo_stop(int piezo_id);
   void steering_stop();
+  double servo_to_rad(int servo_id);
 };
 
 }

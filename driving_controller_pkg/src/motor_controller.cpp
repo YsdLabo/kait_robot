@@ -5,7 +5,14 @@ namespace driving_controller_ns
 
 MotorController::MotorController()
 {
+  // Initialize Servo Motor
   ics_init(&ics_data);
+  double pos_s_m[4];
+  for(int i=0;i<4;i++) {
+    pos_s_m[i] = servo_to_rad(i);
+  }
+  ROS_INFO("servo angle i = %lf: %lf: %lf: %lf", pos_s_m[0], pos_s_m[1], pos_s_m[2], pos_s_m[3]);
+  // Initialize Piezo Sonic Motor
   piezo[0].open(1);  // motor 2
   piezo[0].invert();
   piezo[1].open(3);  // motor 4
@@ -38,9 +45,7 @@ MotorController::MotorController()
     piezo[i].config(0x0C, 0x2400);  // CCW Phase 36.0
   }
 
-  for(int i=0;i<4;i++) output[i] = 0;
-  
-  // trapezoidal control
+  // Initialize Trapezoidal Controller
   for(int i=0;i<4;i++)
   {
     trape[i].SetAccMax(0.5);
@@ -48,6 +53,9 @@ MotorController::MotorController()
     trape[i].SetVelMax(1.0);
   }
 
+  for(int i=0;i<4;i++) output[i] = 0;
+  
+  // Topic
   joint_states_sub = nh.subscribe("joint_states", 10, &MotorController::joint_states_callback, this);
   pub[0] = nh.advertise<std_msgs::Float64>("servo0", 1, this);
   pub[1] = nh.advertise<std_msgs::Float64>("servo1", 1, this);
@@ -63,6 +71,7 @@ MotorController::MotorController()
 
 MotorController::~MotorController()
 {
+  for(int i=0;i<4;i++) ics_free(&ics_data, i+1);
   ics_close(&ics_data);
   for(int i=0;i<4;i++) {
     piezo[i].stop();
@@ -73,6 +82,8 @@ MotorController::~MotorController()
 void MotorController::drive_servo(int servo_id, int pulse, int speed)
 {
   ics_set_speed(&ics_data, servo_id+1, std::abs(speed));
+  if(pulse > 10462) pulse = 10462;
+  if(pulse < 4537) pulse = 4537;
   ics_pos(&ics_data, servo_id+1, pulse);
 }
   
@@ -201,12 +212,14 @@ bool MotorController::steering(int steer_next_state)
     for(int i=0;i<4;i++) {
       pos_p_m[i] = wheel_state.position[i]; // [rad]　車輪軸の現在角度
       //pos_s_m[i] = steering_angle_now[i];
-      pos_s_m[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の現在角度
+      //pos_s_m[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の現在角度
+      pos_s_m[i] = servo_to_rad(i);
       double pos_s_d = (steering_value[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の目標角度
       trape[i].Init(pos_s_d, pos_s_m[i]);    // 台形速度則の初期化
       pos_s_o[i] = pos_s_m[i];
     }
-    steering_flag = true;
+    ROS_INFO("servo angle 0 = %lf: %lf: %lf: %lf", pos_s_m[0], pos_s_m[1], pos_s_m[2], pos_s_m[3]);
+    steering_flag = true;  // 操舵中
   }
   else
   {
@@ -218,11 +231,14 @@ bool MotorController::steering(int steer_next_state)
       //double pos_s = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]
       // 操舵軸の中間目標角度
       pos_s_m[i] = trape[i].Next(t_c);    // [rad]
+      //pos_s_m[i] = -M_PI / 4.0;
       // 車輪軸の中間目標角度
       if(i==0 || i==3) pos_p_m[i] -= pos_s_m[i] - pos_s_o[i];
       else pos_p_m[i] += pos_s_m[i] - pos_s_o[i];
       pos_s_o[i] = pos_s_m[i];
     }
+    // 台形則の計算がおかしい 4/22
+    ROS_INFO("servo angle = %lf: %lf: %lf: %lf", pos_s_m[0], pos_s_m[1], pos_s_m[2], pos_s_m[3]);
     
     // モータ駆動
     for(int i=0;i<4;i++) {
@@ -247,8 +263,8 @@ bool MotorController::steering(int steer_next_state)
     int cnt = 0;
     for(int i=0;i<4;i++) if(trape[i].Finished()) cnt++;
     if(cnt == 4) {
-      for(int i=0;i<4;i++) drive_piezo(i, 0);
-      steering_flag = false;
+      for(int i=0;i<4;i++) drive_piezo(i, 0);    // 完全停止
+      steering_flag = false;  // 操舵停止
       return true;
     }
   }
@@ -313,7 +329,6 @@ bool MotorController::go_to_home()
   }
   */
   if(steering(0)) {
-    for(int i=0;i<4;i++) drive_piezo(i, 0);    // 完全停止
     printf("I'm ready.\n");
     steer_last = 0;
     steer_now = 0;
@@ -326,6 +341,15 @@ bool MotorController::go_to_home()
 void MotorController::steering_stop()
 {
   first_steering = true;
+}
+
+double MotorController::servo_to_rad(int servo_id)
+{
+  int servo = ics_get_position(&ics_data, servo_id+1);
+  //if(servo < 3500) servo = 3500;
+  //else if(servo > 11500) servo = 11500;
+  double angle = (servo - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
+  return angle;
 }
 
 }
