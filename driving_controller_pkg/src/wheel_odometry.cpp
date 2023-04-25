@@ -9,11 +9,13 @@ WheelOdometry::WheelOdometry()
 	cur_y = 0.0;
 	cur_th = 0.0;
 	
-	odom_pub = nh.advertise<nav_msgs::Odometry>("odom2", 1);
+	odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 1);
 }
 
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
 {
+	curent_time = wheel_state.header.stamp;
+	publish_odom();
 	wheel_state_last = wheel_state;
 	first_run = false;
 }
@@ -39,7 +41,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 			phi = 0.0;
 		}
 		// FL & BR
-		else if(steer[1] > areaF_L && steer[1] < areaL_F && steer[0] < 0.0)
+		else if(steer[1] > areaF_L && steer[1] < areaL_F && steer[0] > 0.0)
 		{
 			// Forward Left
 			if(diff_wheel[0] > 0) dth = (diff_wheel[1] - diff_wheel[3]) / L2;
@@ -62,14 +64,14 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		else if(steer[1] >= areaL_F && steer[1] < areaL_B)
 		{
 			// Left
-			if(diff_wheel[0] < 0) dth = (diff_wheel[3] - diff_wheel[0]) / L1;
+			if(diff_wheel[0] < 0) dth = (diff_wheel[3] + diff_wheel[0]) / L1;
 			// Right
-			else dth = (diff_wheel[2] - diff_wheel[1]) / L1;
-			dv = (-diff_wheel[0]+diff_wheel[1]+diff_wheel[2]-diff_wheel[3]) / 4.0;
+			else dth = (diff_wheel[2] + diff_wheel[1]) / L1;
+			dv = (-diff_wheel[0]+diff_wheel[1]-diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = M_PI / 2.0;
 		}
 		// Rotation
-		else if(steer[1] > areaF_L && steer[1] < areaL_F && steer[0] > 0.0)
+		else if(steer[1] > areaF_L && steer[1] < areaL_F && steer[0] < 0.0)
 		{
 			// Rotation
 			dth = (-diff_wheel[0]+diff_wheel[1]+diff_wheel[2]-diff_wheel[3]) / 4.0 / L3;
@@ -89,9 +91,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		cur_vy = dy / dt;
 		cur_w  = dth / dt;
 		
-		
 		publish_odom();
-		//publish_tf();
 	}
 	wheel_state_last = wheel_state;
 	first_run = false;
@@ -128,9 +128,11 @@ void WheelOdometry::publish_odom()
 	odom.twist.covariance[35] = 0.01;
 	
 	odom_pub.publish(odom);
+	publish_tf();
+
 }
 
-/*void WheelOdometry::publish_tf()
+void WheelOdometry::publish_tf()
 {
 	geometry_msgs::TransformStamped  tf_trans;
 
@@ -143,9 +145,9 @@ void WheelOdometry::publish_odom()
 	tf_trans.transform.rotation = odom.pose.pose.orientation;
 
 	try{
-		tf_caster.sendTransform(tf_trans);	// error
+		tf_caster.sendTransform(tf_trans);
 	}
 	catch(...){};
 }
-*/
+
 }

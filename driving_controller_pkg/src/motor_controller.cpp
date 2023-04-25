@@ -7,11 +7,7 @@ MotorController::MotorController()
 {
   // Initialize Servo Motor
   ics_init(&ics_data);
-  double pos_s_m[4];
-  for(int i=0;i<4;i++) {
-    pos_s_m[i] = servo_to_rad(i);
-  }
-  ROS_INFO("servo angle i = %lf: %lf: %lf: %lf", pos_s_m[0], pos_s_m[1], pos_s_m[2], pos_s_m[3]);
+
   // Initialize Piezo Sonic Motor
   piezo[0].open(1);  // motor 2
   piezo[0].invert();
@@ -154,12 +150,6 @@ bool MotorController::check_all_piezos_stop()
 void MotorController::joint_states_callback(const sensor_msgs::JointState::ConstPtr& msg)
 {
   wheel_state = *msg;
-  
-  // 微小移動量をここで計算
-  for(int i=0;i<4;i++) {
-    steering_angle_now[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
-  }
-  //ROS_INFO("%lf", wheel_state.header.stamp.toSec());
 }
 
 /*
@@ -197,9 +187,16 @@ void MotorController::steering(int next)
 }
 */
 
+void MotorController::idling()
+{
+  // Update Wheel Odometry
+  odom.update(wheel_state);
+}
+
 bool MotorController::steering(int steer_next_state)
 {
   double pos_s_m[4];
+  int pos_s[4];
 
   steer_next = steer_next_state;
 
@@ -211,14 +208,11 @@ bool MotorController::steering(int steer_next_state)
   {
     for(int i=0;i<4;i++) {
       pos_p_m[i] = wheel_state.position[i]; // [rad]　車輪軸の現在角度
-      //pos_s_m[i] = steering_angle_now[i];
-      //pos_s_m[i] = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の現在角度
-      pos_s_m[i] = servo_to_rad(i);
+      pos_s_m[i] = servo_to_rad(i); // [rad]  操舵軸の現在角度
       double pos_s_d = (steering_value[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の目標角度
       trape[i].Init(pos_s_d, pos_s_m[i]);    // 台形速度則の初期化
       pos_s_o[i] = pos_s_m[i];
     }
-    ROS_INFO("servo angle 0 = %lf: %lf: %lf: %lf", pos_s_m[0], pos_s_m[1], pos_s_m[2], pos_s_m[3]);
     steering_flag = true;  // 操舵中
   }
   else
@@ -228,17 +222,13 @@ bool MotorController::steering(int steer_next_state)
     
     // 台形速度則
     for(int i=0;i<4;i++) {
-      //double pos_s = (ics_get_position(&ics_data, i+1) - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]
       // 操舵軸の中間目標角度
       pos_s_m[i] = trape[i].Next(t_c);    // [rad]
-      //pos_s_m[i] = -M_PI / 4.0;
       // 車輪軸の中間目標角度
       if(i==0 || i==3) pos_p_m[i] -= pos_s_m[i] - pos_s_o[i];
       else pos_p_m[i] += pos_s_m[i] - pos_s_o[i];
       pos_s_o[i] = pos_s_m[i];
     }
-    // 台形則の計算がおかしい 4/22
-    ROS_INFO("servo angle = %lf: %lf: %lf: %lf", pos_s_m[0], pos_s_m[1], pos_s_m[2], pos_s_m[3]);
     
     // モータ駆動
     for(int i=0;i<4;i++) {
@@ -268,8 +258,8 @@ bool MotorController::steering(int steer_next_state)
       return true;
     }
   }
-  // Wheel Odometry
-  //odom.update(wheel_state);
+  // Update Wheel Odometry
+  odom.update(wheel_state);
 
   steer_now = steer_next;
   return false;
@@ -303,8 +293,10 @@ void MotorController::running(double speed_ms)
       else drive_piezo(i, (int)output[i]);
     }
   }
-  // Wheel Odometry
-  //odom.update(wheel_state, steering_angle_now);
+
+  // Update Wheel Odometry
+  for(int i=0;i<4;i++) steering_angle_now[i] = servo_to_rad(i);
+  odom.update(wheel_state, steering_angle_now);
 }
 
 bool MotorController::go_to_home()
@@ -346,10 +338,8 @@ void MotorController::steering_stop()
 double MotorController::servo_to_rad(int servo_id)
 {
   int servo = ics_get_position(&ics_data, servo_id+1);
-  //if(servo < 3500) servo = 3500;
-  //else if(servo > 11500) servo = 11500;
-  double angle = (servo - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
-  return angle;
+  if(servo < 0) return (double)servo;
+  return (servo - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
 }
 
 }

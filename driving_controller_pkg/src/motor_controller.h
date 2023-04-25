@@ -71,12 +71,15 @@ class MotorController
   void drive_servo(int servo_id, int angle, int speed);
   void drive_piezo(int piezo_id, int speed);
   
+  double servo_to_rad(int servo_id);
+
   int sign(int val) { return (val>0)-(val<0); }
   
   public:
   MotorController();
   ~MotorController();
     
+  void idling();
   bool steering(int steer_next);
   void running(double speed_ms);
   bool go_to_home();
@@ -87,7 +90,6 @@ class MotorController
   void set_piezo_goal_position(int piezo_id, int amount);
   bool check_piezo_stop(int piezo_id);
   void steering_stop();
-  double servo_to_rad(int servo_id);
 };
 
 }

@@ -23,7 +23,7 @@ private:
 	static constexpr double areaF_L = M_PI / 8.0;
 	static constexpr double areaL_F = 3.0 * M_PI / 8.0;
 	static constexpr double areaL_B = 5.0 * M_PI / 8.0;
-	static constexpr double wheel_radius = 0.05;
+	static constexpr double wheel_radius = 0.04975;   // D=0.0995
 	
 	ros::Time  curent_time;
 	double cur_x;
@@ -33,7 +33,7 @@ private:
 	double cur_vy;
 	double cur_w;
 	nav_msgs::Odometry odom;
-	//static tf::TransformBroadcaster tf_caster;
+	tf::TransformBroadcaster tf_caster;
 	
 	sensor_msgs::JointState wheel_state_last;
 	bool first_run = true;

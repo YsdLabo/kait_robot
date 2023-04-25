@@ -366,7 +366,7 @@ int ics_get_position(ICSData * r, UINT id)
 		return i;
 		
 	// return the position
-	return ((r->swap[4] & 0x7F) << 7) | (r->swap[5] & 0x7F);
+	return (((int)r->swap[4] & 0x7F) << 7) | (r->swap[5] & 0x7F);
 }
 
 
