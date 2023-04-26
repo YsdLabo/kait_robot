@@ -105,6 +105,8 @@ private:
 	{
 		double x = msg->linear.x;
 		double y = msg->linear.y;
+		if(std::fabs(x) < MIN_SPEED) x = 0.0;
+		if(std::fabs(y) < MIN_SPEED) y = 0.0;
 		course = std::atan2(y, x);
 		speed  = std::sqrt(x*x+y*y);
 		if(speed > MAX_SPEED) speed = MAX_SPEED;
@@ -113,7 +115,7 @@ private:
 		
 		rotation = msg->angular.z;
 		if(std::fabs(rotation) < MIN_ROTATION) rotation = 0.0;
-		else speed = (std::sqrt(2) * 0.2 + 0.05) * rotation;
+		//else speed = (std::sqrt(2) * 0.2 + 0.05) * rotation;
 		//NODELET_INFO("%lf:%lf:%lf", course, speed, rotation);
 	}
 
@@ -148,10 +150,16 @@ private:
 	void twist_to_direction()
 	{
 		if(speed_is_zero()) {
-			steering_dir_now = E_STEERING::DIRECTION_STOP;
+			if( rotation_is_zero() ) {
+				steering_dir_now = E_STEERING::DIRECTION_STOP;
+			}
+			else {
+				if( course_is_rotate_L() ) steering_dir_now = E_STEERING::ROTATION_L;
+				else if( course_is_rotate_R() ) steering_dir_now = E_STEERING::ROTATION_R;
+			}
 		}
 		else {
-			if( rotation_is_zero()) {
+			if( rotation_is_zero() ) { 
 				if( course_is_in_area_F() ) steering_dir_now = E_STEERING::DIRECTION_F;
 				else if( course_is_in_area_L() ) steering_dir_now = E_STEERING::DIRECTION_L;
 				else if( course_is_in_area_R() ) steering_dir_now = E_STEERING::DIRECTION_R;
@@ -306,8 +314,8 @@ private:
 		else if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
-				//if(go_to_stop()) main_state = E_STATE::IDLING;
-				if(course_changed()) main_state = E_STATE::STEERING;
+				if(go_to_stop()) main_state = E_STATE::IDLING;
+				else if(course_changed()) main_state = E_STATE::STEERING;
 				else main_state = E_STATE::RUNNING;
 				action = E_ACTION::EXIT;
 			}

@@ -18,14 +18,17 @@ private:
 	static constexpr double L1 = 0.4 + 0.1;
 	static constexpr double L2 = 0.4 * std::sqrt(2) + 0.1;
 	static constexpr double L3 = 0.2 * std::sqrt(2) + 0.05;
-	static constexpr double areaR_F = - 3.0 * M_PI / 8.0;
-	static constexpr double areaF_R = - M_PI / 8.0;
-	static constexpr double areaF_L = M_PI / 8.0;
-	static constexpr double areaL_F = 3.0 * M_PI / 8.0;
-	static constexpr double areaL_B = 5.0 * M_PI / 8.0;
+	static constexpr double AREA_F_L = M_PI / 8.0;			// 22.5
+	static constexpr double AREA_L_F = M_PI * 3.0 / 8.0;		// 67.5
+	static constexpr double AREA_L_B = M_PI * 5.0 / 8.0;		// 112.5
+	static constexpr double AREA_B_L = M_PI * 7.0 / 8.0;		// 157.5
+	static constexpr double AREA_F_R = - M_PI / 8.0;		// -22.5
+	static constexpr double AREA_R_F = - M_PI * 3.0 / 8.0;		// -67.5
+	static constexpr double AREA_R_B = - M_PI * 5.0 / 8.0;		// -112.5
+	static constexpr double AREA_B_R = - M_PI * 7.0 / 8.0;		// -157.5
 	static constexpr double wheel_radius = 0.04975;   // D=0.0995
 	
-	ros::Time  curent_time;
+	ros::Time  current_time;
 	double cur_x;
 	double cur_y;
 	double cur_th;

@@ -191,6 +191,7 @@ void MotorController::idling()
 {
   // Update Wheel Odometry
   odom.update(wheel_state);
+  //ROS_INFO("idling odometry");
 }
 
 bool MotorController::steering(int steer_next_state)
@@ -260,6 +261,7 @@ bool MotorController::steering(int steer_next_state)
   }
   // Update Wheel Odometry
   odom.update(wheel_state);
+  //ROS_INFO("steering odometry");
 
   steer_now = steer_next;
   return false;
@@ -297,29 +299,13 @@ void MotorController::running(double speed_ms)
   // Update Wheel Odometry
   for(int i=0;i<4;i++) steering_angle_now[i] = servo_to_rad(i);
   odom.update(wheel_state, steering_angle_now);
+  //ROS_INFO("running odometry");
 }
 
 bool MotorController::go_to_home()
 {
   if(!(wheel_state.header.seq > 0)) return false;
-/*
-  double pos_d[4];
-  for(int i=0;i<4;i++) {
-    int pos = ics_get_position(&ics_data, i+1);
-    int pulse = 7500 - pos;//0:-+, 1:--, 2:--, 3:-+
-    double pos_s = joint_state.position[i];
-    if(i==0 || i==3)
-      pos_d[i] = -pulse * 135.0 / 4000.0 * M_PI / 180.0 + pos_s;
-    else
-      pos_d[i] = pulse * 135.0 / 4000.0 * M_PI / 180.0 + pos_s;
-  }
-  
-  for(int i=0;i<4;i++) {
-    drive_servo(i, 7500, 20);
-    double err = pos_d[i] - joint_state.position[i];
-    drive_piezo(i, (int)(Kp[i]*err)+sign(err*100)*200);
-  }
-  */
+
   if(steering(0)) {
     printf("I'm ready.\n");
     steer_last = 0;
