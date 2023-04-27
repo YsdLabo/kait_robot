@@ -40,51 +40,53 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		if(steer[1] >= AREA_F_R && steer[1] <= AREA_F_L)
 		{
 			// Forward
-			if(diff_wheel[0] > 0) dth = (diff_wheel[1] - diff_wheel[0]) / L1;
+			if(diff_wheel[0] > 0) dth = wheel_radius * (diff_wheel[1] - diff_wheel[0]) / L1;
 			// Back
-			else dth = (diff_wheel[3] - diff_wheel[2]) / L1;
-			dv = (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
+			else dth = wheel_radius * (diff_wheel[3] - diff_wheel[2]) / L1;
+			dv = wheel_radius * (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = 0.0;
 		}
 		// FL & BR
 		else if(steer[1] > AREA_F_L && steer[1] < AREA_L_F && steer[0] > 0.0)
 		{
 			// Forward Left
-			if(diff_wheel[0] > 0) dth = (diff_wheel[1] - diff_wheel[3]) / L2;
+			if(diff_wheel[0] > 0) dth = wheel_radius * (diff_wheel[1] - diff_wheel[3]) / L2;
 			// Backward Right
-			else dth = (diff_wheel[3] - diff_wheel[1]) / L2;
-			dv = (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
+			else dth = wheel_radius * (diff_wheel[3] - diff_wheel[1]) / L2;
+			dv = wheel_radius * (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = M_PI / 4.0;
 		}
 		// FR & BL
 		else if(steer[1] > AREA_R_F && steer[1] < AREA_F_R)
 		{
 			// Forward Right
-			if(diff_wheel[0] > 0) dth = (diff_wheel[2] - diff_wheel[0]) / L2;
+			if(diff_wheel[0] > 0) dth = wheel_radius * (diff_wheel[2] - diff_wheel[0]) / L2;
 			// Backward Left
-			else dth = (diff_wheel[0] - diff_wheel[2]) / L2;
-			dv = (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
+			else dth = wheel_radius * (diff_wheel[0] - diff_wheel[2]) / L2;
+			dv = wheel_radius * (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = - M_PI / 4.0;
 		}
 		// L & R
 		else if(steer[1] >= AREA_L_F && steer[1] < AREA_L_B)
 		{
 			// Left
-			if(diff_wheel[0] < 0) dth = (diff_wheel[3] + diff_wheel[0]) / L1;
+			if(diff_wheel[0] < 0) dth = - wheel_radius * (diff_wheel[3] + diff_wheel[0]) / L1;
 			// Right
-			else dth = (diff_wheel[2] + diff_wheel[1]) / L1;
-			dv = (-diff_wheel[0]+diff_wheel[1]-diff_wheel[2]+diff_wheel[3]) / 4.0;
+			else dth = - wheel_radius * (diff_wheel[2] + diff_wheel[1]) / L1;
+			dv = wheel_radius * (-diff_wheel[0]+diff_wheel[1]-diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = M_PI / 2.0;
 		}
 		// Rotation
 		else if(steer[1] > AREA_F_L && steer[1] < AREA_L_F && steer[0] < 0.0)
 		{
 			// Rotation
-			dth = (-diff_wheel[0]+diff_wheel[1]+diff_wheel[2]-diff_wheel[3]) / 4.0 / L3;
+			dth = wheel_radius * (-diff_wheel[0]+diff_wheel[1]+diff_wheel[2]-diff_wheel[3]) / 4.0 / L3;
 			dv = 0.0;
 			phi = 0.0;
 		}
 		
+		if(std::fabs(dth) < 0.000
+		double R = dv / dth;
 		cur_th += dth * wheel_radius;
 		double dx = dv * std::cos(cur_th + phi) * wheel_radius;
 		double dy = dv * std::sin(cur_th + phi) * wheel_radius;
