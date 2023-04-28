@@ -86,14 +86,15 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		}
 		
 		double dx, dy;
-		double th = cur_th + dth / 2.0 + phi;
 		if(std::fabs(dth) < 0.0001) {
+			double th = cur_th + phi;
 			dx = dv * std::cos(th);
 			dy = dv * std::sin(th);
 		}
 		else {
 			double R = dv / dth;
 			double dL = 2.0 * R * sin(dth / 2.0);
+			double th = cur_th + dth / 2.0 + phi;
 			dx = dL * std::cos(th);
 			dy = dL * std::sin(th);
 		}
