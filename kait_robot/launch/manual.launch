@@ -6,6 +6,6 @@
   <include file="$(find kait_robot)/launch/kait_description.launch"/>
   <include file="$(find my_cartographer)/launch/manual_3d.launch"/>
   
-  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-f base_link -d $(find kait_robot)/utils/rviz.rviz"/>
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-f map -d $(find kait_robot)/utils/rviz.rviz"/>
 
 </launch>

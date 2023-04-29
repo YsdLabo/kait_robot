@@ -15,6 +15,10 @@ WheelOdometry::WheelOdometry()
 void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
 {
 	current_time = wheel_state.header.stamp;
+	if(current_time == wheel_state_last.header.stamp) {
+		ROS_INFO("Ooops! current_time == last_time");
+		return;
+	}
 	publish_odom();
 	wheel_state_last = wheel_state;
 	first_run = false;
@@ -28,7 +32,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		
 		current_time = wheel_state.header.stamp;
 		if(current_time == wheel_state_last.header.stamp) {
-		ROS_INFO("Ooops! current_time == last_time");
+			ROS_INFO("Ooops! current_time == last_time");
 			return;
 		}
 
@@ -49,20 +53,16 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		// FL & BR
 		else if(steer[1] > AREA_F_L && steer[1] < AREA_L_F && steer[0] > 0.0)
 		{
-			// Forward Left
-			if(diff_wheel[0] > 0) dth = wheel_radius * (diff_wheel[1] - diff_wheel[3]) / L2;
-			// Backward Right
-			else dth = wheel_radius * (diff_wheel[3] - diff_wheel[1]) / L2;
+			// Forward Left & Backward Right
+			dth = wheel_radius * (diff_wheel[1] - diff_wheel[3]) / L2;
 			dv = wheel_radius * (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = M_PI / 4.0;
 		}
 		// FR & BL
 		else if(steer[1] > AREA_R_F && steer[1] < AREA_F_R)
 		{
-			// Forward Right
-			if(diff_wheel[0] > 0) dth = wheel_radius * (diff_wheel[2] - diff_wheel[0]) / L2;
-			// Backward Left
-			else dth = wheel_radius * (diff_wheel[0] - diff_wheel[2]) / L2;
+			// Forward Right & Backward Left
+			dth = wheel_radius * (diff_wheel[2] - diff_wheel[0]) / L2;
 			dv = wheel_radius * (diff_wheel[0]+diff_wheel[1]+diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = - M_PI / 4.0;
 		}
@@ -70,9 +70,9 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		else if(steer[1] >= AREA_L_F && steer[1] < AREA_L_B)
 		{
 			// Left
-			if(diff_wheel[0] < 0) dth = - wheel_radius * (diff_wheel[3] + diff_wheel[0]) / L1;
+			if(diff_wheel[0] < 0) dth = wheel_radius * (-diff_wheel[0] - diff_wheel[3]) / L1;
 			// Right
-			else dth = - wheel_radius * (diff_wheel[2] + diff_wheel[1]) / L1;
+			else dth = wheel_radius * (-diff_wheel[2] - diff_wheel[1]) / L1;
 			dv = wheel_radius * (-diff_wheel[0]+diff_wheel[1]-diff_wheel[2]+diff_wheel[3]) / 4.0;
 			phi = M_PI / 2.0;
 		}
@@ -80,7 +80,8 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		else if(steer[1] > AREA_F_L && steer[1] < AREA_L_F && steer[0] < 0.0)
 		{
 			// Rotation
-			dth = wheel_radius * (-diff_wheel[0]+diff_wheel[1]+diff_wheel[2]-diff_wheel[3]) / 4.0 / L3;
+			//dth = wheel_radius * (-diff_wheel[0]+diff_wheel[1]+diff_wheel[2]-diff_wheel[3]) / 4.0 / L3;
+			dth = wheel_radius * (-diff_wheel[0]) / L3;
 			dv = 0.0;
 			phi = 0.0;
 		}
@@ -93,7 +94,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		}
 		else {
 			double R = dv / dth;
-			double dL = 2.0 * R * sin(dth / 2.0);
+			double dL = 2.0 * R * std::sin(dth / 2.0);
 			double th = cur_th + dth / 2.0 + phi;
 			dx = dL * std::cos(th);
 			dy = dL * std::sin(th);
@@ -101,6 +102,9 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		cur_x += dx;
 		cur_y += dy;
 		cur_th += dth;
+		while(cur_th > M_PI) cur_th -= 2.0 * M_PI;
+		while(cur_th < - M_PI) cur_th += 2.0 * M_PI;
+		printf("th : %lf :: %lf: %lf: %lf: %lf\n", cur_th, wheel_state.position[0], wheel_state.position[1], wheel_state.position[2], wheel_state.position[3]);
 
 		double dt = (current_time - wheel_state_last.header.stamp).toSec();
 		cur_vx = dx / dt;
@@ -159,10 +163,10 @@ void WheelOdometry::publish_tf()
 	tf_trans.transform.translation.z = odom.pose.pose.position.z;
 	tf_trans.transform.rotation = odom.pose.pose.orientation;
 
-	try{
+	//try{
 		tf_caster.sendTransform(tf_trans);
-	}
-	catch(...){};
+	//}
+	//catch(...){};
 }
 
 }

@@ -7,9 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1
-        - /TF1/Status1
         - /Map1
-        - /Map1/Status1
         - /PointCloud21
         - /Odometry1
         - /Odometry1/Shape1
@@ -65,10 +63,6 @@ Visualization Manager:
       Frames:
         All Enabled: true
         base_link:
-          Value: true
-        ds4:
-          Value: true
-        ds4_imu:
           Value: true
         ethertop_front:
           Value: true
@@ -162,7 +156,7 @@ Visualization Manager:
       Class: rviz/PointCloud2
       Color: 255; 255; 255
       Color Transformer: Intensity
-      Decay Time: 0.10000000149011612
+      Decay Time: 0.20000000298023224
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -263,7 +257,7 @@ Visualization Manager:
         Color: 255; 25; 0
         Head Length: 0
         Head Radius: 0
-        Shaft Length: 0.009999999776482582
+        Shaft Length: 0.019999999552965164
         Shaft Radius: 0.009999999776482582
         Value: Arrow
       Topic: /odom
@@ -296,26 +290,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 3.5906877517700195
+      Angle: 0.009999999776482582
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0.10441624373197556
-        Y: 0.29072049260139465
-        Z: 1.5323017835617065
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Scale: 99.03363037109375
       Target Frame: <Fixed Frame>
-      Value: Orbit (rviz)
-      Yaw: 1.8635668754577637
+      Value: TopDownOrtho (rviz)
+      X: 0.5589826107025146
+      Y: 0.7351275682449341
     Saved: ~
 Window Geometry:
   Displays:

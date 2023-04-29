@@ -18,7 +18,7 @@
   <include file="$(find ds4_driver)/launch/ds4_twist.launch"/>
 
   <group if="$(arg visual)">
-    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-f base_link -d $(find kait_robot)/utils/rviz.rviz"/>
+    <node pkg="rviz" type="rviz" name="rviz" required="true" args="-f map -d $(find kait_robot)/utils/rviz.rviz"/>
   </group>
   
   <group if="$(arg record)">
