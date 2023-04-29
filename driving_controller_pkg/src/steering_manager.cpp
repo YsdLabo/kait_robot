@@ -82,6 +82,7 @@ namespace driving_controller_ns
       }
       else {
       	motor.idling();
+        stop_flag = true;
       }
       //if(driving_state != 1) {
       //  motor.steering_stop();
