@@ -64,7 +64,7 @@ namespace driving_controller_ns
       if(driving_state == 1)
       {
         if(motor.steering(steering_dir)) {
-          driving_state = 9;
+          driving_state = 0;
           stop_flag = true;
         }
         else stop_flag = false;
