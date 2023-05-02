@@ -22,7 +22,7 @@ namespace driving_controller_ns
     int steering_dir;
     double driving_speed;
     bool stop_flag = true;
-    bool start_flag = true;
+    bool start_flag = false;
     
     bool driving_state_service(driving_controller_pkg::DrivingState::Request&, driving_controller_pkg::DrivingState::Response&);
     bool stopped_state_service(std_srvs::Empty::Request&, std_srvs::Empty::Response&);
@@ -56,8 +56,8 @@ namespace driving_controller_ns
   // Main Loop
   void SteeringManager::motor_loop_callback(const ros::TimerEvent& e)
   {
-    if(start_flag) {
-      if(motor.go_to_home()) start_flag = false;
+    if(!start_flag) {
+      if(motor.go_to_home()) start_flag = true;
     }
     else {
       // Steering

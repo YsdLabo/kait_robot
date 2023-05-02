@@ -59,7 +59,8 @@
   <joint name="bno055_1_joint" type="fixed">
     <parent link="base_link"/>
     <child link="imu_link"/>
-    <origin rpy="3.1415926 0 -1.57079632679" xyz="0.05 -0.2 0.3"/>
+    <!--origin rpy="3.1415926 0 -1.57079632679" xyz="0.05 -0.2 0.3"/-->
+    <origin rpy="3.1415926 0 0" xyz="0.05 -0.2 0.3"/>
     <!--origin rpy="0 0 0" xyz="0.05 -0.2 0.3"/--><!--追記-->
   </joint>
 </robot>
