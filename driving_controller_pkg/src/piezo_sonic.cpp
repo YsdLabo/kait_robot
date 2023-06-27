@@ -92,7 +92,7 @@ int PiezoSonic::move(int _speed)
 
 	if(handle != NULL) {
 		// Write Control 1 register
-		write(0x34, 0xE000);	// USB enable, Encoder not use
+		write(0x34, 0xE000);	// enable USB, use Encoder
 
 		// Write Control 2 register
 		if(speed == 0) {
