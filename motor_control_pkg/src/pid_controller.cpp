@@ -186,8 +186,8 @@ void PidController::init()
 	//parce[0]
 
 	for(int i=0; i<MOTOR_NUMS; i++) {
-		motor[i] = new PiezoSonic(i);
-		motor[i]->open();
+		motor[i] = new PiezoSonic();
+		motor[i]->open(i);
 		motor[i]->config(0x00, para[i].cw_high_freq);
 		motor[i]->config(0x02, para[i].cw_low_freq);
 		motor[i]->config(0x04, para[i].cw_phase);

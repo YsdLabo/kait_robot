@@ -20,6 +20,7 @@ class PiezoSonic
 	int id;
 	int rotate;
 	int speed;
+	bool inversion = false;
 
 	libusb_device_handle *handle;
 	
@@ -32,14 +33,15 @@ class PiezoSonic
 	void write(uint8_t _address, uint16_t value);
 
 public:
-	PiezoSonic(int _device_id);
+	PiezoSonic() {};
 
-	void open();
+	void open(int _device_id);
 	void close();
 	int move(int _speed);
 	void stop();
 	uint16_t status(int _address);
 	void config(int _address, int value);
+	void invert();
 };
 
 #endif
