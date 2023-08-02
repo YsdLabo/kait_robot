@@ -3,6 +3,7 @@
 #include<std_msgs/Int32MultiArray.h>
 
 #define  MOTOR_NUMS  4
+#define  VELOCITY_COUNTS  10
 
 std_msgs::Int32MultiArray  enc_data;
 sensor_msgs::JointState joint_state;
@@ -11,6 +12,7 @@ ros::Publisher  pub;
 long enc_count[MOTOR_NUMS] = {0};
 double current_angle[MOTOR_NUMS];
 double last_angle[MOTOR_NUMS];
+double velocity[MOTOR_NUMS][VELOCITY_COUNTS];
 constexpr double toRadian = 2.0 * M_PI / 4000.0;
 ros::Time current_time;
 ros::Time last_time;
@@ -23,7 +25,7 @@ void encoderCallback(const std_msgs::Int32MultiArray::ConstPtr& msg)
 	enc_count[1] += enc_data.data[3];    // wheel_fr
 	enc_count[2] += enc_data.data[5];    // wheel_br
 	enc_count[3] -= enc_data.data[7];    // wheel_bl
-	
+
 	//old
 	//enc_count[0] += enc_data.data[0];    // axle_fl
 	//enc_count[1] -= enc_data.data[1];    // wheel_fl
@@ -37,6 +39,8 @@ void encoderCallback(const std_msgs::Int32MultiArray::ConstPtr& msg)
 
 void timerCallback(const ros::TimerEvent& e)
 {
+	static int num = 0;
+
 	current_time = ros::Time::now();
 	for(int i=0;i<MOTOR_NUMS;i++)
 		current_angle[i] = enc_count[i] * toRadian;
@@ -64,7 +68,12 @@ void timerCallback(const ros::TimerEvent& e)
 	double dt = (current_time - last_time).toSec();
 	for(int i=0;i<MOTOR_NUMS;i++) {
 		joint_state.position[i] = current_angle[i];
-		joint_state.velocity[i] = (current_angle[i] - last_angle[i]) / dt;
+		velocity[i][num] = (current_angle[i] - last_angle[i]) / dt;
+		num++;
+		if(num == VELOCITY_COUNTS) num = 0;
+		joint_state.velocity[i] = 0.0;
+		for(int j=0;j<VELOCITY_COUNTS;j++) joint_state.velocity[i] += velocity[i][j];
+		joint_state.velocity[i] /= (double)VELOCITY_COUNTS;
 		last_angle[i] = current_angle[i];
 	}
 
@@ -82,7 +91,7 @@ int main(int argc, char** argv)
 
 	ros::init(argc, argv, "wheel_rotation");
 	ros::NodeHandle nh;
-	ros::Subscriber sub = nh.subscribe("/kait_robot/encoder_count", 100, &encoderCallback);
+	ros::Subscriber sub = nh.subscribe("/kait_robot/encoder_count", 10, &encoderCallback);
 	pub = nh.advertise<sensor_msgs::JointState>("joint_states", 1);
 	ros::Timer  timer = nh.createTimer(ros::Duration(0.01), &timerCallback);
 

@@ -42,7 +42,8 @@ class MotorController
   // for steering
   double piezo_goal[4];
   bool first_steering = true;
-  double Kp[4] = {8600, 2000, 7200, 9600};//{5400, 1500, 4500, 6000};  // 1800, 1000, 1500, 1800 -> 1800,1000,1500,6000
+  //double Kp[4] = {8600, 2000, 7200, 9600};//{5400, 1500, 4500, 6000};  // 1800, 1000, 1500, 1800 -> 1800,1000,1500,6000
+  double Kp[4] = {8000, 0, 0, 0};
   TrapezoidalPosControl trape[4];
   bool steering_flag = false;
   double pos_p_m[4];
@@ -51,7 +52,7 @@ class MotorController
   // for running
   static constexpr double  alpha = 0.9;
   static constexpr double  beta = 0.97;
-  static constexpr double  mps_to_digit = 2500.0;
+  static constexpr double  mps_to_digit = 20.0/0.0026;   // modify  1m/s = 20rad/s = 20/0.0026 digit/s = 7692
   double output[4];
   
   // for odometry

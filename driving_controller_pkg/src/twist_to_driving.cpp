@@ -77,7 +77,7 @@ public:
 		nh = getNodeHandle();
 		pnh = getPrivateNodeHandle();
 		
-		pnh.param("max_speed", MAX_SPEED, 1.0);
+		pnh.param("max_speed", MAX_SPEED, 0.5);
 		pnh.param("min_speed", MIN_SPEED, 0.01);
 		pnh.param("max_rotation", MAX_ROTATION, 2.0);
 		pnh.param("min_rotation", MIN_ROTATION, 0.5);

@@ -18,29 +18,29 @@ std_msgs::Int32MultiArray enc_count_msg;
 ros::Publisher pub("/kait_robot/encoder_count", &enc_count_msg);
 
 DigitalIn din[] = {
-	DigitalIn(p7, PullNone),
-	DigitalIn(p8, PullNone),
+	DigitalIn(p7, PullNone),    // ch0
+	DigitalIn(p8, PullNone),    // ch1
 
-	DigitalIn(p11, PullNone),
-	DigitalIn(p12, PullNone),
+	DigitalIn(p11, PullNone),   // ch2
+	DigitalIn(p12, PullNone),   // ch3
 
-	DigitalIn(p15, PullNone),
-	DigitalIn(p16, PullNone),
+	DigitalIn(p15, PullNone),   // ch4
+	DigitalIn(p16, PullNone),   // ch5
 
-	DigitalIn(p17, PullNone),
-	DigitalIn(p18, PullNone),
+	DigitalIn(p17, PullNone),   // ch6
+	DigitalIn(p18, PullNone),   // ch7
 
-	DigitalIn(p19, PullNone),
-	DigitalIn(p20, PullNone),
+	DigitalIn(p19, PullNone),   // ch8
+	DigitalIn(p20, PullNone),   // ch9
 
-	DigitalIn(p26, PullNone),
-	DigitalIn(p25, PullNone),
+	DigitalIn(p26, PullNone),   // ch10
+	DigitalIn(p25, PullNone),   // ch11
 
-	DigitalIn(p24, PullNone),
-	DigitalIn(p23, PullNone),
+	DigitalIn(p24, PullNone),   // ch12
+	DigitalIn(p23, PullNone),   // ch13
 
-	DigitalIn(p22, PullNone),
-	DigitalIn(p21, PullNone)
+	DigitalIn(p22, PullNone),   // ch14
+	DigitalIn(p21, PullNone)    // ch15
 };
 
 //DigitalOut led1 = LED1;
@@ -50,21 +50,16 @@ Ticker  count_ticker;
 char encAB[MOTOR_NUMS];
 char encAB_old[MOTOR_NUMS];
 int enc_cnt[MOTOR_NUMS] = {0};
+static const int encode_table[] = {0, -1, 1, 0, 1, 0, 0, -1, -1, 0, 0, 1, 0, 1, -1, 0};
 
 void enc_loop()
 {
-	char res;
 	for(int i=0;i<MOTOR_NUMS;i++) {
 		int ch = 2 * i;
-		encAB[i] = din[ch+1];
-		encAB[i] <<= 1;
-		encAB[i] |= din[ch];
-		if(encAB[i] != encAB_old[i]) {
-			res = (encAB[i] + (encAB_old[i] << 1)) & 0x03;
-			if(res >= 2) enc_cnt[i]++;
-			else enc_cnt[i]--;
-			encAB_old[i] = encAB[i];
-		}
+		encAB[i] = (din[ch+1]<<1) | din[ch];
+		unsigned char state = (encAB_old[i]<<2) | encAB[i];
+		encAB_old[i] = encAB[i];
+		enc_cnt[i] += encode_table[state];
 	}
 }
 
@@ -78,9 +73,7 @@ int main() {
 
 	for(int i=0;i<MOTOR_NUMS;i++) {
 		int ch = 2 * i;
-		encAB_old[i] = din[ch+1];
-		encAB_old[i] <<= 1;
-		encAB_old[i] |= din[ch];
+		encAB_old[i] = (din[ch+1]<<1) | din[ch];
 		enc_cnt[i] = 0;
 	}
 
@@ -93,9 +86,12 @@ int main() {
 			enc_count_msg.data[i] = enc_cnt[i];
 			enc_cnt[i] = 0;
 		}
+		__disable_irq();
         pub.publish( &enc_count_msg );
         nh.spinOnce();
-        wait_ms(10);
+        __enable_irq();
+
+        wait_ms(5);
     }
 }
 

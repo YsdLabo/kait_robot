@@ -236,7 +236,8 @@ bool MotorController::steering(int steer_next_state)
       // 車輪軸駆動
       double pos_p = wheel_state.position[i]; // [rad]
       double err = pos_p_m[i] - pos_p;
-      drive_piezo(i, (int)(Kp[i]*err) + sign(err*100)*200);
+      //drive_piezo(i, (int)(Kp[i]*err) + sign(err*100)*200);  // modify
+      drive_piezo(i, (int)(Kp[i]*err));
       // 操舵軸駆動
       int pos_s_d = (int)(pos_s_m[i] * 180.0 / M_PI * 4000.0 / 135.0) + 7500;    // rad to digital
       drive_servo(i, pos_s_d, 100);
