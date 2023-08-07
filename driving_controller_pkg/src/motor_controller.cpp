@@ -16,25 +16,33 @@ MotorController::MotorController()
   piezo[3].open(7);  // motor 8
   piezo[3].invert();
   
-  piezo[0].config(0x00, 0x2A00);  // CW High Frequency 42.0Hz
+  piezo[0].config(0x00, 0x2905);  // CW High Frequency 41.5Hz
   piezo[0].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
-  piezo[0].config(0x08, 0x2A00);  // CCW High Frequency 42.0Hz
+  piezo[0].config(0x08, 0x2905);  // CCW High Frequency 41.5Hz
   piezo[0].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
+  piezo[0].config(0x12, 0);  // Kp
+  piezo[0].config(0x14, 3900);  // Ki
   
-  piezo[1].config(0x00, 0x2805);  // CW High Frequency 40.5Hz
+  piezo[1].config(0x00, 0x2800);  // CW High Frequency 40.0Hz
   piezo[1].config(0x02, 0x2C00);  // CW Low Frequency 44.0Hz
-  piezo[1].config(0x08, 0x2805);  // CCW High Frequency 40.5Hz
+  piezo[1].config(0x08, 0x2800);  // CCW High Frequency 40.0Hz
   piezo[1].config(0x0A, 0x2C00);  // CCW Low Frequency 44.0Hz
+  piezo[1].config(0x12, 0);  // Kp
+  piezo[1].config(0x14, 3900);  // Ki
 
-  piezo[2].config(0x00, 0x2A00);  // CW High Frequency 42.0Hz
+  piezo[2].config(0x00, 0x2900);  // CW High Frequency 41.0Hz
   piezo[2].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
-  piezo[2].config(0x08, 0x2A00);  // CCW High Frequency 42.0Hz
+  piezo[2].config(0x08, 0x2900);  // CCW High Frequency 41.0Hz
   piezo[2].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
+  piezo[2].config(0x12, 0);  // Kp
+  piezo[2].config(0x14, 3100);  // Ki
 
-  piezo[3].config(0x00, 0x2A00);  // CW High Frequency 42.0Hz
+  piezo[3].config(0x00, 0x2900);  // CW High Frequency 41.0Hz
   piezo[3].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
-  piezo[3].config(0x08, 0x2A00);  // CCW High Frequency 42.0Hz
+  piezo[3].config(0x08, 0x2900);  // CCW High Frequency 41.0Hz
   piezo[3].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
+  piezo[3].config(0x12, 0);  // Kp
+  piezo[3].config(0x14, 3100);  // Ki
 
   for(int i=0;i<4;i++) {
     piezo[i].config(0x04, 0x2400);  // CW Phase 36.0
