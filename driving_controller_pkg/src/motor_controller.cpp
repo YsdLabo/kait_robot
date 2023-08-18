@@ -280,16 +280,27 @@ bool MotorController::steering(int steer_next_state)
 void MotorController::running(double speed_ms)
 {
   double speed_d = speed_ms * mps_to_digit;
-  double rate[] = {0.92, 0.90, 1.0, 1.0};
+//  double rate[] = {0.92, 0.90, 1.0, 1.0};
+  double rate[] = {1.0, 1.0, 1.0, 1.0};
   // Low-pass
   for(int i=0;i<4;i++) {
     if(speed_d == 0) output[i] = beta * output[i] + (1.0-beta) * speed_d * rate[i];  // when to stop
     else output[i] = alpha * output[i] + (1.0-alpha) * speed_d * rate[i];    // when to accelerate
   }
 
+  double steer_dir[][4] = {
+    { 1.0, 1.0,  1.0,  1.0}, // F, B
+    { 1.0, 1.0,  1.0,  1.0}, // FL, FR
+    { 1.0, 1.0,  1.0,  1.0}, // BL, BR
+    {-1.0, 1.0, -1.0,  1.0}, // L, R
+    {-1.0, 1.0,  1.0, -1.0}  // RotL, RotR
+  };
+  
   // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
   for(int i=0;i<4;i++) {
-    // F, B, FL, FR, BL, BR (state=0,1,2)
+    drive_piezo(i, steer_dir[steer_now][i]*output[i]);
+
+/*    // F, B, FL, FR, BL, BR (state=0,1,2)
     if(steer_now < 3) {
       drive_piezo(i, (int)output[i]);
     }
@@ -303,6 +314,7 @@ void MotorController::running(double speed_ms)
       if(i==0 || i==3) drive_piezo(i, -1*(int)output[i]);
       else drive_piezo(i, (int)output[i]);
     }
+*/
   }
 
   // Update Wheel Odometry
