@@ -281,12 +281,13 @@ void MotorController::running(double speed_ms)
 {
   double speed_d = speed_ms * mps_to_digit;
 //  double rate[] = {0.92, 0.90, 1.0, 1.0};
-  double rate[] = {1.0, 1.0, 1.0, 1.0};
+  double rate[] = {1.0, 0, 0, 0};
   // Low-pass
   for(int i=0;i<4;i++) {
     if(speed_d == 0) output[i] = beta * output[i] + (1.0-beta) * speed_d * rate[i];  // when to stop
     else output[i] = alpha * output[i] + (1.0-alpha) * speed_d * rate[i];    // when to accelerate
   }
+  ROS_INFO("speed_ms = %lf, speed_d = %lf, output[0] = %lf", speed_ms, speed_d, output[0]);
 
   double steer_dir[][4] = {
     { 1.0, 1.0,  1.0,  1.0}, // F, B
