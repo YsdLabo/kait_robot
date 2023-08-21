@@ -284,19 +284,17 @@ void MotorController::running(double speed_ms)
   double rate[] = {1.0, 0, 0, 0};
   // Low-pass
   for(int i=0;i<4;i++) {
-    double sign = cal_sign(speed_ms - speed_d);
-    
-    if(speed_ms - speed_d > 0) {
-      speed_d += sign * acc * dt;
-      if(speed_ms - speed_d < 0) speed_d = speed_ms;
+    double sign = cal_sign(speed_ms - output[i]);
+
+    if(std::abs(speed_ms - output[i]) < 0.0001) {
+      output[i] = speed_ms;
     }
     else {
-      speed_d -= acc * dt;
-      if(speed_d < speed_ms) speed_d = speed_ms;
+      output[i] += sign * acc * dt;
+      if(sign * (speed_ms - output[i]) < 0) output[i] = speed_ms;
     }
     //if(speed_d == 0) output[i] = beta * output[i] + (1.0-beta) * speed_d * rate[i];  // when to stop
     //else output[i] = alpha * output[i] + (1.0-alpha) * speed_d * rate[i];    // when to accelerate
-    output[i] *= mps_to_digit;
   }
   ROS_INFO("speed_ms = %lf, speed_d = %lf, output[0] = %lf", speed_ms, speed_d, output[0]);
 
@@ -310,7 +308,7 @@ void MotorController::running(double speed_ms)
   
   // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
   for(int i=0;i<4;i++) {
-    drive_piezo(i, steer_dir[steer_now][i]*output[i]);
+    drive_piezo(i, steer_dir[steer_now][i] * output[i] * mps_to_digit);
 
 /*    // F, B, FL, FR, BL, BR (state=0,1,2)
     if(steer_now < 3) {
@@ -357,7 +355,7 @@ void MotorController::steering_stop()
 double MotorController::servo_to_rad(int servo_id)
 {
   int servo = ics_get_position(&ics_data, servo_id+1);
-  if(servo < 0) return (double)servo;
+  if(servo < 0) return (double)servo;   // return error code
   return (servo - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
 }
 
