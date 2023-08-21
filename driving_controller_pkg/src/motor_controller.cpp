@@ -1,6 +1,6 @@
 #include "motor_controller.h"
 
-#define ACCELERATION 1.0
+#define ACCELERATION 0.5
 
 namespace driving_controller_ns
 {
