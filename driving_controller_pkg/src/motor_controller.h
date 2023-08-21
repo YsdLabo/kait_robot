@@ -6,6 +6,7 @@
 #include<pluginlib/class_list_macros.h>
 #include <sensor_msgs/JointState.h>
 #include <std_msgs/Float64.h>
+#include <time.h>
 #include "ics.h"
 #include "piezo_sonic.h"
 #include "trapezoidal_control.h"
@@ -55,6 +56,7 @@ class MotorController
   static constexpr double  mps_to_digit = 20.0/0.0026;   // modify  1m/s = 20rad/s = 20/0.0026 digit/s = 7692
   double speed_d;
   double output[4];
+  ros::Time time_cur, time_last;
   
   // for odometry
   WheelOdometry odom;
