@@ -1,6 +1,7 @@
 #include "motor_controller.h"
 
 #define ACCELERATION 0.5
+#define DEACCELERATION -0.5
 
 namespace driving_controller_ns
 {
@@ -52,6 +53,8 @@ MotorController::MotorController()
   }
 
   // Initialize Trapezoidal Controller
+  ros::param::param<double>("acceleration", acc, ACCELERATION);
+  ros::param::param<double>("deacceleration", dcc, DEACCELERATION);
   for(int i=0;i<4;i++)
   {
     trape[i].SetAccMax(0.5);
@@ -73,7 +76,6 @@ MotorController::MotorController()
   pub[7] = nh.advertise<std_msgs::Float64>("piezo3", 1, this);
 
   time_cur = ros::Time::now();
-  ros::param::param<double>("acceleration", acc, ACCELERATION);
   
   steer_last = steer_now = steer_next = 0;
 }
