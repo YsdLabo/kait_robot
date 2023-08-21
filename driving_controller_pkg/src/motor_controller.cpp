@@ -1,5 +1,7 @@
 #include "motor_controller.h"
 
+#define ACCELERATION 1.0
+
 namespace driving_controller_ns
 {
 
@@ -70,6 +72,9 @@ MotorController::MotorController()
   pub[6] = nh.advertise<std_msgs::Float64>("piezo2", 1, this);
   pub[7] = nh.advertise<std_msgs::Float64>("piezo3", 1, this);
 
+  time_cur = ros::Time::now();
+  ros::param::param<double>("acceleration", acc, ACCELERATION);
+  
   steer_last = steer_now = steer_next = 0;
 }
 
@@ -279,52 +284,31 @@ bool MotorController::steering(int steer_next_state)
   
 void MotorController::running(double speed_ms)
 {
-  double speed_d;
-//  double rate[] = {0.92, 0.90, 1.0, 1.0};
-  double rate[] = {1.0, 0, 0, 0};
-  // Low-pass
-  for(int i=0;i<4;i++) {
-    double sign = cal_sign(speed_ms - output[i]);
+  
+  time_last = time_cur;
+  time_cur = ros::Time::now();
+  double dt = (time_cur - time_last).toSec();
+  double sgn = sign(speed_ms - speed_d);
 
-    if(std::abs(speed_ms - output[i]) < 0.0001) {
-      output[i] = speed_ms;
-    }
-    else {
-      output[i] += sign * acc * dt;
-      if(sign * (speed_ms - output[i]) < 0) output[i] = speed_ms;
-    }
-    //if(speed_d == 0) output[i] = beta * output[i] + (1.0-beta) * speed_d * rate[i];  // when to stop
-    //else output[i] = alpha * output[i] + (1.0-alpha) * speed_d * rate[i];    // when to accelerate
+  if(std::abs(speed_ms - speed_d) < 0.0001) {
+    speed_d = speed_ms;
   }
-  ROS_INFO("speed_ms = %lf, speed_d = %lf, output[0] = %lf", speed_ms, speed_d, output[0]);
+  else {
+    speed_d += sgn * acc * dt;
+    if(sgn * (speed_ms - speed_d) < 0) speed_d = speed_ms;
+  }
 
   double steer_dir[][4] = {
     { 1.0, 1.0,  1.0,  1.0}, // F, B
-    { 1.0, 1.0,  1.0,  1.0}, // FL, FR
-    { 1.0, 1.0,  1.0,  1.0}, // BL, BR
+    { 1.0, 1.0,  1.0,  1.0}, // FL, BR
+    { 1.0, 1.0,  1.0,  1.0}, // BL, FR
     {-1.0, 1.0, -1.0,  1.0}, // L, R
     {-1.0, 1.0,  1.0, -1.0}  // RotL, RotR
   };
   
   // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
   for(int i=0;i<4;i++) {
-    drive_piezo(i, steer_dir[steer_now][i] * output[i] * mps_to_digit);
-
-/*    // F, B, FL, FR, BL, BR (state=0,1,2)
-    if(steer_now < 3) {
-      drive_piezo(i, (int)output[i]);
-    }
-    // L, R (state=3)
-    else if (steer_now == 3) {
-      if(i==0 || i==2) drive_piezo(i, -1*(int)output[i]);
-      else drive_piezo(i, (int)output[i]);
-    }
-    // RotL, RotR (state=4)
-    else {
-      if(i==0 || i==3) drive_piezo(i, -1*(int)output[i]);
-      else drive_piezo(i, (int)output[i]);
-    }
-*/
+    drive_piezo(i, steer_dir[steer_now][i] * speed_d * mps_to_digit);
   }
 
   // Update Wheel Odometry
@@ -354,9 +338,9 @@ void MotorController::steering_stop()
 
 double MotorController::servo_to_rad(int servo_id)
 {
-  int servo = ics_get_position(&ics_data, servo_id+1);
-  if(servo < 0) return (double)servo;   // return error code
-  return (servo - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;
+  int servo = -1;
+  while((servo = ics_get_position(&ics_data, servo_id+1)) < 0);
+  return (servo - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;   // -2.356rad～2.356rad　
 }
 
 }
