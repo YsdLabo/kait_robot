@@ -54,8 +54,9 @@ class MotorController
   //static constexpr double  beta = 0.99; //0.97;
   static constexpr double  mps_to_digit = 20.0/0.0026;   // modify  1m/s = 20rad/s = 20/0.0026 digit/s = 7692
   double speed_d;
-  double acc;
-  double dcc;
+  double max_acc;
+  double max_dcc;
+  double max_vel;
   //double output[4];
   ros::Time time_cur, time_last;
   
