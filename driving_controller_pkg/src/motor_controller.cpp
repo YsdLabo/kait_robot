@@ -1,7 +1,8 @@
 #include "motor_controller.h"
 
-#define ACCELERATION 0.5
-#define DEACCELERATION -0.5
+#define DEFAULT_MAX_ACC  0.5    // m/s^2
+#define DEFAULT_MAX_DCC -0.5    // m/s^2
+#define DEFAULT_MAX_VEL  0.5    // m/s
 
 namespace driving_controller_ns
 {
@@ -53,12 +54,14 @@ MotorController::MotorController()
   }
 
   // Initialize Trapezoidal Controller
-  ros::param::param<double>("acceleration", acc, ACCELERATION);
-  ros::param::param<double>("deacceleration", dcc, DEACCELERATION);
+  ros::param::param<double>("max_acceleration", max_acc, DEFAULT_MAX_ACC);
+  ros::param::param<double>("max_deacceleration", max_dcc, DEFAULT_MAX_DCC);
+  ros::param::param<double>("max_velocity", max_vel, DEFAULT_MAX_VEL);
+  
   for(int i=0;i<4;i++)
   {
-    trape[i].SetAccMax(0.5);
-    trape[i].SetDccMax(-0.5);
+    trape[i].SetAccMax(acc);
+    trape[i].SetDccMax(dcc);
     trape[i].SetVelMax(1.0);
   }
 
