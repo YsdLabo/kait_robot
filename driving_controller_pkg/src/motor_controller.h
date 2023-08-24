@@ -77,7 +77,7 @@ class MotorController
   void drive_servo(int servo_id, int angle, int speed);
   void drive_piezo(int piezo_id, int speed);
   
-  double servo_to_rad(int servo_id);
+  double get_servo_angle(int servo_id);
 
   int sign(int val) { return (val>0)-(val<0); }
   double sign(double val) { return (double)((val>0.0)-(val<0.0)); }
