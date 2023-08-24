@@ -228,7 +228,7 @@ bool MotorController::steering(int steer_next_state)
   {
     for(int i=0;i<4;i++) {
       pos_p_m[i] = wheel_state.position[i]; // [rad]　車輪軸の現在角度
-      pos_s_m[i] = servo_to_rad(i); // [rad]  操舵軸の現在角度
+      pos_s_m[i] = get_servo_angle(i); // [rad]  操舵軸の現在角度
       double pos_s_d = (steering_value[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の目標角度
       trape[i].Init(pos_s_d, pos_s_m[i]);    // 台形速度則の初期化
       pos_s_o[i] = pos_s_m[i];
@@ -318,7 +318,7 @@ void MotorController::running(double speed_ms)
   }
 
   // Update Wheel Odometry
-  for(int i=0;i<4;i++) steering_angle_now[i] = servo_to_rad(i);
+  for(int i=0;i<4;i++) steering_angle_now[i] = get_servo_angle(i);
   odom.update(wheel_state, steering_angle_now);
   //ROS_INFO("running odometry");
 }
@@ -342,7 +342,7 @@ void MotorController::steering_stop()
   first_steering = true;
 }
 
-double MotorController::servo_to_rad(int servo_id)
+double MotorController::get_servo_angle(int servo_id)
 {
   int servo = -1;
   while((servo = ics_get_position(&ics_data, servo_id+1)) < 0);
