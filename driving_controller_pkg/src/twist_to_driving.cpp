@@ -101,6 +101,9 @@ public:
 	}
 
 private:
+	//
+	// twist to driving
+	//
 	void cmd_vel_callback(const geometry_msgs::Twist::ConstPtr& msg)
 	{
 		double x = msg->linear.x;
@@ -314,13 +317,13 @@ private:
 		else if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
-				if(go_to_stop()) main_state = E_STATE::IDLING;
-				else if(course_changed()) main_state = E_STATE::STEERING;
-				else main_state = E_STATE::RUNNING;
 				action = E_ACTION::EXIT;
 			}
 		}
 		if(action == E_ACTION::EXIT) {
+			if(course_changed()) main_state = E_STATE::STEERING;
+			else if(go_to_stop()) main_state = E_STATE::IDLING;
+			else main_state = E_STATE::RUNNING;
 			action = E_ACTION::ENTRY;
 		}
 	}
@@ -356,8 +359,6 @@ private:
 		if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
-				//if(go_to_stop()) main_state = E_STATE::IDLING;
-				//else 
 				main_state = E_STATE::STEERING;
 				action = E_ACTION::EXIT;
 			}

@@ -56,21 +56,23 @@ namespace driving_controller_ns
   // Main Loop
   void SteeringManager::motor_loop_callback(const ros::TimerEvent& e)
   {
+    // 初期実行
     if(!start_flag) {
       if(motor.go_to_home()) start_flag = true;
+      stop_flag = true;
     }
     else {
       // Steering
       if(driving_state == 1)
       {
         if(motor.steering(steering_dir)) {
-          driving_state = 0;
+          driving_state = 0;  // to idling
           stop_flag = true;
         }
         else stop_flag = false;
 
       }
-      // Running
+      // Running & Stopping
       else if (driving_state == 2 || driving_state == 3)
       {
         motor.running(driving_speed);
@@ -80,6 +82,7 @@ namespace driving_controller_ns
         }
         else stop_flag = false;
       }
+      // Idling
       else {
       	motor.idling();
         stop_flag = true;

@@ -16,7 +16,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state)
 {
 	current_time = wheel_state.header.stamp;
 	if(current_time == wheel_state_last.header.stamp) {
-		ROS_INFO("Ooops! current_time == last_time");
+		ROS_INFO("[Odometry update1] Ooops! current_time == last_time");
 		return;
 	}
 	publish_odom();
@@ -32,7 +32,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		
 		current_time = wheel_state.header.stamp;
 		if(current_time == wheel_state_last.header.stamp) {
-			ROS_INFO("Ooops! current_time == last_time");
+			ROS_INFO("[Odometry update2] Ooops! current_time == last_time");
 			return;
 		}
 

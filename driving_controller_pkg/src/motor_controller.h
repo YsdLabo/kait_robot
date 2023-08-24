@@ -43,7 +43,7 @@ class MotorController
   double piezo_goal[4];
   bool first_steering = true;
   //double Kp[4] = {8600, 2000, 7200, 9600};//{5400, 1500, 4500, 6000};  // 1800, 1000, 1500, 1800 -> 1800,1000,1500,6000
-  double Kp[4] = {8000, 0, 0, 0};
+  double Kp[4] = {3000, 3000, 3000, 3000};
   TrapezoidalPosControl trape[4];
   bool steering_flag = false;
   double pos_p_m[4];
@@ -79,6 +79,7 @@ class MotorController
   double servo_to_rad(int servo_id);
 
   int sign(int val) { return (val>0)-(val<0); }
+  double sign(double val) { return (double)((val>0.0)-(val<0.0)); }
   
   public:
   MotorController();

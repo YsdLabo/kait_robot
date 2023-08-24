@@ -24,28 +24,28 @@ MotorController::MotorController()
   piezo[0].config(0x08, 0x2905);  // CCW High Frequency 41.5Hz
   piezo[0].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
   piezo[0].config(0x12, 0);  // Kp
-  piezo[0].config(0x14, 3900);  // Ki
+  piezo[0].config(0x14, 390);  // Ki
   
   piezo[1].config(0x00, 0x2800);  // CW High Frequency 40.0Hz
   piezo[1].config(0x02, 0x2C00);  // CW Low Frequency 44.0Hz
   piezo[1].config(0x08, 0x2800);  // CCW High Frequency 40.0Hz
   piezo[1].config(0x0A, 0x2C00);  // CCW Low Frequency 44.0Hz
   piezo[1].config(0x12, 0);  // Kp
-  piezo[1].config(0x14, 3900);  // Ki
+  piezo[1].config(0x14, 390);  // Ki
 
   piezo[2].config(0x00, 0x2900);  // CW High Frequency 41.0Hz
   piezo[2].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
   piezo[2].config(0x08, 0x2900);  // CCW High Frequency 41.0Hz
   piezo[2].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
   piezo[2].config(0x12, 0);  // Kp
-  piezo[2].config(0x14, 3100);  // Ki
+  piezo[2].config(0x14, 310);  // Ki
 
   piezo[3].config(0x00, 0x2900);  // CW High Frequency 41.0Hz
   piezo[3].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
   piezo[3].config(0x08, 0x2900);  // CCW High Frequency 41.0Hz
   piezo[3].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
   piezo[3].config(0x12, 0);  // Kp
-  piezo[3].config(0x14, 3100);  // Ki
+  piezo[3].config(0x14, 310);  // Ki
 
   for(int i=0;i<4;i++) {
     piezo[i].config(0x04, 0x2400);  // CW Phase 36.0
@@ -62,7 +62,7 @@ MotorController::MotorController()
     trape[i].SetVelMax(1.0);
   }
 
-  for(int i=0;i<4;i++) output[i] = 0;
+  speed_d = 0;
   
   // Topic
   joint_states_sub = nh.subscribe("joint_states", 10, &MotorController::joint_states_callback, this);
@@ -103,7 +103,8 @@ void MotorController::drive_piezo(int piezo_id, int speed)
   int speed_m = speed;
   if(speed > 4000) speed_m = 4000;
   if(speed < -4000) speed_m = -4000;
-  if(std::abs(speed) < 100) speed_m = 0;
+  //if(std::abs(speed) < 100) speed_m = 0;
+//  ROS_INFO("speed_m[%d] : %d", piezo_id, speed);
   piezo[piezo_id].move(speed_m);
 //  if(wheel_state.velocity.size() > 0)
 //    printf("%d : %d : %lf\n", piezo_id, speed_m, wheel_state.velocity[piezo_id]);
@@ -286,10 +287,10 @@ bool MotorController::steering(int steer_next_state)
   
 void MotorController::running(double speed_ms)
 {
-  
   time_last = time_cur;
   time_cur = ros::Time::now();
   double dt = (time_cur - time_last).toSec();
+  if(dt > 0.1) return;
   double sgn = sign(speed_ms - speed_d);
 
   if(std::abs(speed_ms - speed_d) < 0.0001) {
