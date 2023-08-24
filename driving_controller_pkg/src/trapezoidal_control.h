@@ -17,10 +17,7 @@ private:
 	bool first;
 
 public:
-	TrapezoidalPosControl() {
-		SetAccMax(1.0);
-		SetDccMax(-1.0);
-		SetVelMax(1.0);
+	TrapezoidalPosControl() : acc_max(1.0), dcc_max(-1.0), vel_max(1.0) {
 		pos_m = 0.0;
 		finished = false;
 	}
