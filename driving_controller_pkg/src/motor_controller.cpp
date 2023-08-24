@@ -60,9 +60,9 @@ MotorController::MotorController()
   
   for(int i=0;i<4;i++)
   {
-    trape[i].SetAccMax(acc);
-    trape[i].SetDccMax(dcc);
-    trape[i].SetVelMax(1.0);
+    trape[i].SetAccMax(max_acc);
+    trape[i].SetDccMax(max_dcc);
+    trape[i].SetVelMax(max_vel);
   }
 
   speed_d = 0;
