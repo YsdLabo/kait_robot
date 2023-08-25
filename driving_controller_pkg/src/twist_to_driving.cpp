@@ -231,7 +231,7 @@ private:
 	{
 		return (steering_dir_now != steering_dir_last);
 	}
-	bool go_to_stop()
+	bool steering_dir_is_stop()
 	{
 		return (steering_dir_now == E_STEERING::DIRECTION_STOP);
 	}
@@ -324,7 +324,7 @@ private:
 		}
 		if(action == E_ACTION::EXIT) {
 			if(course_changed()) main_state = E_STATE::STEERING;
-			else if(go_to_stop()) main_state = E_STATE::IDLING;
+			else if(steering_dir_is_stop()) main_state = E_STATE::IDLING;
 			else main_state = E_STATE::RUNNING;
 			action = E_ACTION::ENTRY;
 		}
@@ -367,7 +367,7 @@ private:
 			}
 		}
 		if(action == E_ACTION::EXIT) {
-			steering_dir_now = E_STEERING::DIRECTION_STOP;
+			//steering_dir_now = E_STEERING::DIRECTION_STOP;
 			action = E_ACTION::ENTRY;
 		}
 	}
