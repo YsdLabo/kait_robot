@@ -21,11 +21,11 @@ public:
 		pos_m = 0.0;
 		finished = false;
 	}
-	TrapezoidalPosControl(double _acc, double _dcc, double _vel, double _pos=0.0) {
+	TrapezoidalPosControl(double _acc, double _dcc, double _vel, double _pos_m=0.0) {
 		SetAccMax(_acc);
 		SetDccMax(_dcc);
 		SetVelMax(_vel);
-		pos_m = _pos;
+		pos_m = _pos_m;
 		finished = false;
 	}
 
