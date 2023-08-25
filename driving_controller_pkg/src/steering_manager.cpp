@@ -71,7 +71,7 @@ namespace driving_controller_ns
       {
         if(motor.steering(steering_dir)) {
         printf("end steering\n");
-          driving_state = 0;  // to idling
+          driving_state = -1;  // to idling
           stop_flag = true;
         }
         else stop_flag = false;
