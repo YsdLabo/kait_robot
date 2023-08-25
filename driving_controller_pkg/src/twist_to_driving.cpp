@@ -244,35 +244,35 @@ private:
 	}
 	void start_idling()
 	{
-		driving_state.request.state = static_cast<int>(E_STATE::IDLING);
+		driving_state.request.state = static_cast<int>(E_STATE::IDLING);  // 0
 		driving_state.request.steering = 0;
 		driving_state.request.speed = 0;
-		clientDrivingState.call(driving_state);
+		while(!clientDrivingState.call(driving_state));
 	}
 	void do_steering()
 	{
 		int n = static_cast<int>(steering_dir_now);
-		driving_state.request.state = static_cast<int>(E_STATE::STEERING);
+		driving_state.request.state = static_cast<int>(E_STATE::STEERING);  // 1
 		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
 		driving_state.request.speed = 0;
-		clientDrivingState.call(driving_state);
+		while(!clientDrivingState.call(driving_state));
 	}
 	void do_running()
 	{
 		int n = static_cast<int>(steering_dir_now);
-		driving_state.request.state = static_cast<int>(E_STATE::RUNNING);
+		driving_state.request.state = static_cast<int>(E_STATE::RUNNING);  // 2
 		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
 		if(rotation_is_zero()) driving_state.request.speed = speed;
 		else driving_state.request.speed = rotation * 0.3328;
-		clientDrivingState.call(driving_state);
+		while(!clientDrivingState.call(driving_state));
 	}
 	void stop_running()
 	{
 		int n = static_cast<int>(steering_dir_now);
-		driving_state.request.state = static_cast<int>(E_STATE::STOPPING);
+		driving_state.request.state = static_cast<int>(E_STATE::STOPPING);  // 3
 		driving_state.request.steering = (n==0?0:(int)((n-1)/2));
 		driving_state.request.speed = 0;
-		clientDrivingState.call(driving_state);
+		while(!clientDrivingState.call(driving_state));
 	}
 	
 	// アイドリング中
@@ -298,9 +298,9 @@ private:
 	// 操舵中
 	void state_steering()
 	{
-		static int init_flag = 0;
+		//static int init_flag = 0;
 		if(action == E_ACTION::ENTRY) {
-			NODELET_INFO("[State] Steering");
+			NODELET_INFO("[State] Steering (%d)", (int)steering_dir_now);
 			//if(init_flag == 0) {
 				store_current_steering_dir();
 				//start_steering();
@@ -312,11 +312,13 @@ private:
 				//init_flag = 0;
 			//}
 			sleep(0.1);
+			NODELET_INFO("entry_end (%d)", (int)steering_dir_now);
 			
 		}
 		else if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
+			NODELET_INFO("motors_stopped(%d)", (int)steering_dir_now);
 				action = E_ACTION::EXIT;
 			}
 		}
@@ -359,6 +361,7 @@ private:
 		if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
+			NODELET_INFO("check all motors stopped.");
 				main_state = E_STATE::STEERING;
 				action = E_ACTION::EXIT;
 			}

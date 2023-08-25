@@ -40,6 +40,9 @@ class MotorController
   PiezoSonic piezo[4];
   
   // for steering
+  static constexpr double m_to_rad = 20.0;
+  double max_steering_acc;
+  double max_steering_vel;
   double piezo_goal[4];
   bool first_steering = true;
   //double Kp[4] = {8600, 2000, 7200, 9600};//{5400, 1500, 4500, 6000};  // 1800, 1000, 1500, 1800 -> 1800,1000,1500,6000
@@ -50,14 +53,11 @@ class MotorController
   double pos_s_o[4];
   
   // for running
-  //static constexpr double  alpha = 0.999; //0.9;
-  //static constexpr double  beta = 0.99; //0.97;
   static constexpr double  mps_to_digit = 20.0/0.0026;   // modify  1m/s = 20rad/s = 20/0.0026 digit/s = 7692
   double speed_d;
   double max_acc;
   double max_dcc;
   double max_vel;
-  //double output[4];
   ros::Time time_cur, time_last;
   
   // for odometry

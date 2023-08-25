@@ -1,8 +1,11 @@
 #include "motor_controller.h"
 
-#define DEFAULT_MAX_ACC  0.5    // m/s^2
-#define DEFAULT_MAX_DCC -0.5    // m/s^2
-#define DEFAULT_MAX_VEL  0.5    // m/s
+#define DEFAULT_MAX_STEERING_ACC  5.0    // rad/s^2
+#define DEFAULT_MAX_STEERING_VEL  1.0    // rad/s
+
+#define DEFAULT_MAX_ACC  0.3    // m/s^2
+#define DEFAULT_MAX_DCC -0.3    // m/s^2
+#define DEFAULT_MAX_VEL  0.1    // m/s
 
 namespace driving_controller_ns
 {
@@ -54,15 +57,19 @@ MotorController::MotorController()
   }
 
   // Initialize Trapezoidal Controller
+  // for STEERING
+  ros::param::param<double>("max_steering_acc", max_steering_acc, DEFAULT_MAX_STEERING_ACC);
+  ros::param::param<double>("max_steering_vel", max_steering_vel, DEFAULT_MAX_STEERING_VEL);
+  // for RUNNING
   ros::param::param<double>("max_acceleration", max_acc, DEFAULT_MAX_ACC);
   ros::param::param<double>("max_deacceleration", max_dcc, DEFAULT_MAX_DCC);
   ros::param::param<double>("max_velocity", max_vel, DEFAULT_MAX_VEL);
   
   for(int i=0;i<4;i++)
   {
-    trape[i].SetAccMax(max_acc);
-    trape[i].SetDccMax(max_dcc);
-    trape[i].SetVelMax(max_vel);
+    trape[i].SetAccMax(max_steering_acc);
+    trape[i].SetDccMax(max_steering_acc);
+    trape[i].SetVelMax(max_steering_vel);
   }
 
   speed_d = 0;
@@ -171,50 +178,27 @@ void MotorController::joint_states_callback(const sensor_msgs::JointState::Const
   wheel_state = *msg;
 }
 
-/*
-void MotorController::steering(int next)
-{
-  int amount[4];
-
-  steer_next = next;
-  if(steer_next != steer_now) {
-    steer_last = steer_now;
-  }
-
-  for(int i=0;i<4;i++) {
-    amount[i] = steering_speed[steer_last][steer_next][i];
-  }
-  if(first_steering) {
-    for(int i=0;i<4;i++)
-      set_piezo_goal_position(i, amount[i]);
-  	first_steering = false;
-  }
-
-  for(int i=0;i<4;i++) {
-    //int amount = steering_speed[steer_last][steer_next][i];
-    drive_servo(i, steering_value[steer_next][i], amount[i]*20);
-    double err = piezo_goal[i] - wheel_state.position[i];
-    //if(check_servo_stop(i)) drive_piezo(i, 0);
-    if(check_piezo_stop(i)) drive_piezo(i, 0);
-    //else drive_piezo(i, amount[i]*500+sign(amount[i])*2500);
-    else drive_piezo(i, (int)(Kp[i]*err)+sign(err*100)*200);
-//    printf("%d : ", (int)(Kp[i]*err)+sign(err*100)*200);
-  }
-//  printf("\n");
-  
-  steer_now = steer_next;
-}
-*/
-
+//
+// IDLING
+//
 void MotorController::idling()
 {
+  time_last = time_cur;
+  time_cur = ros::Time::now();
+
   // Update Wheel Odometry
   odom.update(wheel_state);
   //ROS_INFO("idling odometry");
 }
 
+//
+// STEERING
+//
 bool MotorController::steering(int steer_next_state)
 {
+  time_last = time_cur;
+  time_cur = ros::Time::now();
+
   double pos_s_m[4];
   int pos_s[4];
 
@@ -287,24 +271,42 @@ bool MotorController::steering(int steer_next_state)
   return false;
 }
 
-  
+//
+// RUNNING
+//
 void MotorController::running(double speed_ms)
 {
   time_last = time_cur;
   time_cur = ros::Time::now();
   double dt = (time_cur - time_last).toSec();
   if(dt > 0.1) return;
+
+  if(std::abs(speed_ms) > max_vel) speed_ms = sign(speed_ms) * max_vel;
   double sgn = sign(speed_ms - speed_d);
 
   if(std::abs(speed_ms - speed_d) < 0.0001) {
     speed_d = speed_ms;
   }
   else {
-    speed_d += sgn * acc * dt;
+    if(speed_ms == 0.0) {
+      if(sgn < 0.0) speed_d += max_dcc * dt;
+      else if(sgn > 0.0) speed_d -= max_dcc * dt;
+      else speed_d = 0.0;
+    }
+    else if(speed_ms > 0.0) {
+      if(sgn > 0.0) speed_d += max_acc * dt;
+      else if(sgn < 0.0) speed_d -= max_acc * dt;
+      else speed_d = speed_ms;
+    }
+    else if(speed_ms < 0.0) {
+      if(sgn < 0.0) speed_d -= max_acc * dt;
+      else if(sgn > 0.0) speed_d += max_acc * dt;
+      else speed_d = speed_ms;
+    }
     if(sgn * (speed_ms - speed_d) < 0) speed_d = speed_ms;
   }
 
-  double steer_dir[][4] = {
+  double rotate_dir[][4] = {
     { 1.0, 1.0,  1.0,  1.0}, // F, B
     { 1.0, 1.0,  1.0,  1.0}, // FL, BR
     { 1.0, 1.0,  1.0,  1.0}, // BL, FR
@@ -314,7 +316,7 @@ void MotorController::running(double speed_ms)
   
   // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
   for(int i=0;i<4;i++) {
-    drive_piezo(i, steer_dir[steer_now][i] * speed_d * mps_to_digit);
+    drive_piezo(i, rotate_dir[steer_now][i] * speed_d * mps_to_digit);
   }
 
   // Update Wheel Odometry

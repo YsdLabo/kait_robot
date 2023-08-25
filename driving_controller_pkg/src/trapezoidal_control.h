@@ -30,16 +30,16 @@ public:
 	}
 
 	void SetAccMax(double _acc) { 
-		if(_acc > 0) acc_max = _acc;
+		if(_acc > 0.0) acc_max = _acc;
 		else acc_max = -1.0 * _acc;
 	}
 	void SetDccMax(double _dcc) {
-		if(_dcc == 0) dcc_max = -1.0 * acc_max;	
-		else if(_dcc > 0) dcc_max = -1.0 * _dcc;
+		if(_dcc == 0.0) dcc_max = -1.0 * acc_max;
+		else if(_dcc > 0.0) dcc_max = -1.0 * _dcc;
 		else dcc_max = _dcc;
 	}
 	void SetVelMax(double _vel) {
-		if(_vel > 0) vel_max = _vel;
+		if(_vel > 0.0) vel_max = _vel;
 		else vel_max = -1.0 * _vel;
 	}
 	void SetPos(double _pos) {

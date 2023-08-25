@@ -23,6 +23,7 @@ namespace driving_controller_ns
     double driving_speed;
     bool stop_flag = true;
     bool start_flag = false;
+    bool block = false;
     
     bool driving_state_service(driving_controller_pkg::DrivingState::Request&, driving_controller_pkg::DrivingState::Response&);
     bool stopped_state_service(std_srvs::Empty::Request&, std_srvs::Empty::Response&);
@@ -41,15 +42,16 @@ namespace driving_controller_ns
   // Service
   bool SteeringManager::driving_state_service(driving_controller_pkg::DrivingState::Request& req, driving_controller_pkg::DrivingState::Response& res)
   {
+    if(block == true) {NODELET_INFO("block"); return false;}
     driving_state = req.state;
     steering_dir = req.steering;
     driving_speed = req.speed;
-//    NODELET_INFO("get : %d : %d : %lf", driving_state, steering_dir, driving_speed);
     return true;
   }
   
   bool SteeringManager::stopped_state_service(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res)
   {
+    //NODELET_INFO("send : stop_flag %d", (int)stop_flag);
     return stop_flag;
   }
   
@@ -62,10 +64,13 @@ namespace driving_controller_ns
       stop_flag = true;
     }
     else {
+      block = true;
+    NODELET_INFO("start : %d : %d : %lf", driving_state, steering_dir, driving_speed);
       // Steering
       if(driving_state == 1)
       {
         if(motor.steering(steering_dir)) {
+        printf("end steering\n");
           driving_state = 0;  // to idling
           stop_flag = true;
         }
@@ -90,6 +95,8 @@ namespace driving_controller_ns
       //if(driving_state != 1) {
       //  motor.steering_stop();
       //}
+    NODELET_INFO("end   : %d : %d : %lf", driving_state, steering_dir, driving_speed);
+      block = false;
     }
   }
 }

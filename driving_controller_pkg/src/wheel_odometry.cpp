@@ -104,7 +104,7 @@ void WheelOdometry::update(sensor_msgs::JointState& wheel_state, double steer[4]
 		cur_th += dth;
 		while(cur_th > M_PI) cur_th -= 2.0 * M_PI;
 		while(cur_th < - M_PI) cur_th += 2.0 * M_PI;
-		printf("th : %lf :: %lf: %lf: %lf: %lf\n", cur_th, wheel_state.position[0], wheel_state.position[1], wheel_state.position[2], wheel_state.position[3]);
+		//printf("th : %lf :: %lf: %lf: %lf: %lf\n", cur_th, wheel_state.position[0], wheel_state.position[1], wheel_state.position[2], wheel_state.position[3]);
 
 		double dt = (current_time - wheel_state_last.header.stamp).toSec();
 		cur_vx = dx / dt;
