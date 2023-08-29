@@ -47,6 +47,8 @@ class MotorController
   bool first_steering = true;
   //double Kp[4] = {8600, 2000, 7200, 9600};//{5400, 1500, 4500, 6000};  // 1800, 1000, 1500, 1800 -> 1800,1000,1500,6000
   double Kp[4] = {1000, 1000, 1000, 1000};
+  double Ki[4] = {10, 10, 10, 10};
+  double e_i[4];
   TrapezoidalPosControl trape[4];
   bool steering_flag = false;
   double pos_p_m[4];
