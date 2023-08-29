@@ -46,6 +46,7 @@ namespace driving_controller_ns
     driving_state = req.state;
     steering_dir = req.steering;
     driving_speed = req.speed;
+    if(driving_state == 1) stop_flag = false;
     return true;
   }
   
