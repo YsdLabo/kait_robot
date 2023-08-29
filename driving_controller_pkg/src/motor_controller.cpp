@@ -257,7 +257,7 @@ bool MotorController::steering(int steer_next_state)
     // 終了判定
     int cnt = 0;
     for(int i=0;i<4;i++) if(trape[i].Finished()) cnt++;
-    if(cnt == 4) {
+    if(cnt == 4 && check_all_piezos_stop() && check_all_servos_stop()) {
       for(int i=0;i<4;i++) drive_piezo(i, 0);    // 完全停止
       steering_flag = false;  // 操舵停止
       return true;
