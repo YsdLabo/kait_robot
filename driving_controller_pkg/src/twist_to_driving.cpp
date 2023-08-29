@@ -311,7 +311,7 @@ private:
 				action = E_ACTION::DO;
 				//init_flag = 0;
 			//}
-			ros::Duration(0.1).sleep();
+			//ros::Duration(0.1).sleep();
 			NODELET_INFO("[stm] Steering : entry_end (%d)", (int)steering_dir_now);
 			
 		}
