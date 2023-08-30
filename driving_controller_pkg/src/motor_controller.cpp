@@ -1,6 +1,6 @@
 #include "motor_controller.h"
 
-#define DEFAULT_MAX_STEERING_ACC  5.0    // rad/s^2
+#define DEFAULT_MAX_STEERING_ACC  0.7    // rad/s^2
 #define DEFAULT_MAX_STEERING_VEL  1.0    // rad/s
 
 #define DEFAULT_MAX_ACC  0.3    // m/s^2
@@ -217,6 +217,7 @@ bool MotorController::steering(int steer_next_state)
       trape[i].Init(pos_s_d, pos_s_m[i]);    // 台形速度則の初期化
       pos_s_o[i] = pos_s_m[i];
       e_i[i] = 0.0;
+      e_d[i] = 0.0;
     }
     steering_flag = true;  // 操舵中
   }
@@ -242,14 +243,18 @@ bool MotorController::steering(int steer_next_state)
       double err = pos_p_m[i] - pos_p;
       e_i[i] += err;
       //drive_piezo(i, (int)(Kp[i]*err) + sign(err*100)*200);  // modify
-      drive_piezo(i, (int)(Kp[i]*err + Ki[i]*e_i[i]));
+      double dt = (time_cur - time_last).toSec();
+      e_d[i] = err - e_d[i];
+      double output = Kp[i]*err + Ki[i]*e_i[i]*dt - Kd[i]*e_d[i]/dt;
+      drive_piezo(i, (int)(output));
+      e_d[i] = err;
       // 操舵軸駆動
       int pos_s_d = (int)(pos_s_m[i] * 180.0 / M_PI * 4000.0 / 135.0) + 7500;    // rad to digital
       drive_servo(i, pos_s_d, 100);
       // パブリッシュ
       msg.data = pos_p_m[i];
       pub[i].publish(msg);
-      msg.data = pos_p;
+      msg.data = output/1000.0;
       pub[i+4].publish(msg);
     }
     
