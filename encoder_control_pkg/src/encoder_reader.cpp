@@ -1,6 +1,7 @@
 #include<ros/ros.h>
 #include<sensor_msgs/JointState.h>
 #include<std_msgs/Int32MultiArray.h>
+#include<kait_robot_msgs/EncoderCount.h>
 
 #define  MOTOR_NUMS  4
 #define  VELOCITY_COUNTS  10
@@ -66,16 +67,21 @@ void timerCallback(const ros::TimerEvent& e)
 	//joint_state.name[7] ="wheel_bl";
 
 	double dt = (current_time - last_time).toSec();
+	joint_state.position[0] = current_angle[0];
+	joint_state.position[1] = last_angle[0];
+	joint_state.position[2] = dt;
+	joint_state.position[3] = enc_count[0];
 	for(int i=0;i<MOTOR_NUMS;i++) {
-		joint_state.position[i] = current_angle[i];
+		//joint_state.position[i] = current_angle[i];
 		velocity[i][num] = (current_angle[i] - last_angle[i]) / dt;
+		joint_state.velocity[i] = velocity[i][num];
 		num++;
 		if(num == VELOCITY_COUNTS) num = 0;
-		joint_state.velocity[i] = 0.0;
-		for(int j=0;j<VELOCITY_COUNTS;j++) joint_state.velocity[i] += velocity[i][j];
-		joint_state.velocity[i] /= (double)VELOCITY_COUNTS;
+		//joint_state.velocity[i] = 0.0;
+		//for(int j=0;j<VELOCITY_COUNTS;j++) joint_state.velocity[i] += velocity[i][j];
+		//joint_state.velocity[i] /= (double)VELOCITY_COUNTS;
 		last_angle[i] = current_angle[i];
-	}
+	}	
 
 	pub.publish(joint_state);
 	last_time = current_time;
@@ -88,6 +94,9 @@ int main(int argc, char** argv)
 		current_angle[i] = 0;
 		last_angle[i] = 0;
 	}
+	
+	kait_robot_msgs::EncoderCount ec;
+	ec.count.resize(MOTOR_NUMS);
 
 	ros::init(argc, argv, "wheel_rotation");
 	ros::NodeHandle nh;

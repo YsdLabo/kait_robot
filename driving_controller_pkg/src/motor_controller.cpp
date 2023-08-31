@@ -1,7 +1,7 @@
 #include "motor_controller.h"
 
 #define DEFAULT_MAX_STEERING_ACC  0.7    // rad/s^2
-#define DEFAULT_MAX_STEERING_VEL  1.0    // rad/s
+#define DEFAULT_MAX_STEERING_VEL  0.5    // rad/s
 
 #define DEFAULT_MAX_ACC  0.3    // m/s^2
 #define DEFAULT_MAX_DCC -0.3    // m/s^2
@@ -27,8 +27,8 @@ MotorController::MotorController()
   piezo[0].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
   piezo[0].config(0x08, 0x2905);  // CCW High Frequency 41.5Hz
   piezo[0].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
-  piezo[0].config(0x12, 0);  // Kp
-  piezo[0].config(0x14, 390);  // Ki
+  piezo[0].config(0x12, 0);  // Kp 0
+  piezo[0].config(0x14, 3900);  // Ki 390
   
   piezo[1].config(0x00, 0x2800);  // CW High Frequency 40.0Hz
   piezo[1].config(0x02, 0x2C00);  // CW Low Frequency 44.0Hz
@@ -252,7 +252,7 @@ bool MotorController::steering(int steer_next_state)
       int pos_s_d = (int)(pos_s_m[i] * 180.0 / M_PI * 4000.0 / 135.0) + 7500;    // rad to digital
       drive_servo(i, pos_s_d, 100);
       // パブリッシュ
-      msg.data = pos_p_m[i];
+      msg.data = trape[i].GetVel(t_c) / 0.026 / 1000.0; //pos_p_m[i];
       pub[i].publish(msg);
       msg.data = output/1000.0;
       pub[i+4].publish(msg);
@@ -321,9 +321,12 @@ void MotorController::running(double speed_ms)
     {-1.0, 1.0,  1.0, -1.0}  // RotL, RotR
   };
   
+  std_msgs::Float64 msg;
   // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
   for(int i=0;i<4;i++) {
     drive_piezo(i, rotate_dir[steer_now][i] * speed_d * mps_to_digit);
+    msg.data = rotate_dir[steer_now][i] * speed_d * mps_to_digit;
+    pub[0].publish(msg);
   }
 
   // Update Wheel Odometry

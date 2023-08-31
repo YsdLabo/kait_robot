@@ -48,6 +48,13 @@ public:
 	double GetPos() {
 		return pos_m;
 	}
+	double GetVel(double t_c) {
+		double t = t_c - t_s;
+		if(t <= t1) return sign * acc_max * t;
+		else if(t <= t2) return sign * vel_max;
+		else if(t <= t3) return sign * (vel_max + dcc_max * (t-t2));
+		else return 0;
+	}
 	bool Finished() { return finished; }
 
 	void Init(double _pos_d, double _pos_m=0.0)
