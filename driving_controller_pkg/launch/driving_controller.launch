@@ -13,6 +13,6 @@
   
   <node pkg="nodelet" type="nodelet" args="load nodelet_driving_controller/TwistToDriving $(arg manager_name)" name="twist_to_driving_loader" output="screen" />
   
-  <node pkg="nodelet" type="nodelet" args="load nodelet_driving_controller/SteeringManager $(arg manager_name)" name="steering_manager_loader" output="screen" />
+  <node pkg="nodelet" type="nodelet" args="load nodelet_driving_controller/SteeringManager $(arg manager_name)" name="steering_manager_loader" output="screen" launch-prefix="bash -c 'sleep 1s; $0 $@;'" />
 
 </launch>
