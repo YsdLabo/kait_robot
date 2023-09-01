@@ -46,8 +46,8 @@ class MotorController
   double piezo_goal[4];
   bool first_steering = true;
   //double Kp[4] = {8600, 2000, 7200, 9600};//{5400, 1500, 4500, 6000};  // 1800, 1000, 1500, 1800 -> 1800,1000,1500,6000
-  double Kp[4] = {3000, 4000, 4000, 4000};
-  double Ki[4] = {3500, 5, 5, 5};
+  double Kp[4] = {4000, 4000, 4000, 4000}; // 3000
+  double Ki[4] = {1000, 5, 5, 5}; // 3500
   double Kd[4] = {0, 10, 10, 10};
   double e_i[4];
   double e_d[4];

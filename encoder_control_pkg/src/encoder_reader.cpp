@@ -20,6 +20,7 @@ ros::Time last_time;
 void encoderCallback(const std_msgs::Int32MultiArray::ConstPtr& msg)
 {
 	current_time = ros::Time::now();
+
 	enc_data = *msg;
 
 	enc_count[0] -= enc_data.data[1];    // wheel_fl
@@ -71,14 +72,13 @@ void timerCallback(const ros::TimerEvent& e)
 		joint_state.position[i] = current_angle[i];
 		// VELOCITY
 		velocity[i][num] = (current_angle[i] - last_angle[i]) / dt;
-		joint_state.velocity[i] = velocity[i][num];
-		num++;
-		if(num == VELOCITY_COUNTS) num = 0;
-		//joint_state.velocity[i] = 0.0;
-		//for(int j=0;j<VELOCITY_COUNTS;j++) joint_state.velocity[i] += velocity[i][j];
-		//joint_state.velocity[i] /= (double)VELOCITY_COUNTS;
+		joint_state.velocity[i] = 0.0;
+		for(int j=0;j<VELOCITY_COUNTS;j++) joint_state.velocity[i] += velocity[i][j];
+		joint_state.velocity[i] /= (double)VELOCITY_COUNTS;
 		last_angle[i] = current_angle[i];
 	}	
+	num++;
+	if(num == VELOCITY_COUNTS) num = 0;
 
 	pub.publish(joint_state);
 	last_time = current_time;
@@ -97,6 +97,7 @@ int main(int argc, char** argv)
 	ros::Subscriber sub = nh.subscribe("/kait_robot/encoder_count", 10, &encoderCallback);
 	pub = nh.advertise<sensor_msgs::JointState>("joint_states", 1);
 	ros::Timer  timer = nh.createTimer(ros::Duration(0.01), &timerCallback);
+	last_time = ros::Time::now();
 
 	ros::spin();
 
