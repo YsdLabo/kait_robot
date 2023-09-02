@@ -21,11 +21,18 @@ class MotorController
   int steer_last = 0;
   int steer_next = 0;
   int steering_value[5][4] = {
-    {7500, 7500, 7500, 7500},    // 0: Stop, F, B (0,0,0,0)
-    {8833, 8833, 8833, 8833},    // 1: FL, BR (45,45,45,45)
-    {6167, 6167, 6167, 6167},    // 2: FR, BL (-45,-45,-45,-45)
-    {4833, 10167, 4833, 10167},  // 3: L, R (-90,90,-90,90)
-    {6167, 8833, 6167, 8833}     // 4: Rotation (-45,45,-45,45)
+    {7500, 7500, 7500, 7500},    // 0: Stop, F, B (0, 0, 0, 0)
+    {8833, 8833, 8833, 8833},    // 1: FL, BR     ( 45, 45, 45, 45)
+    {6167, 6167, 6167, 6167},    // 2: FR, BL     (-45,-45,-45,-45)
+    {4833, 10167, 4833, 10167},  // 3: L, R       (-90, 90,-90, 90)
+    {6167, 8833, 6167, 8833}     // 4: Rotation   (-45, 45,-45, 45)
+  };
+  double steering_angle[5][4] = {
+    {0.0, 0.0, 0.0, 0.0},                            // 0: Stop, F, B (0, 0, 0, 0)
+    { M_PI/4.0,  M_PI/4.0,  M_PI/4.0,  M_PI/4.0},    // 1: FL, BR     ( 45, 45, 45, 45)
+    {-M_PI/4.0, -M_PI/4.0, -M_PI/4.0, -M_PI/4.0},    // 2: FR, BL     (-45,-45,-45,-45)
+    {-M_PI/2.0,  M_PI/2.0, -M_PI/2.0,  M_PI/2.0},    // 3: L, R       (-90, 90,-90, 90)
+    {-M_PI/4.0,  M_PI/4.0, -M_PI/4.0,  M_PI/4.0}     // 4: Rotation   (-45, 45,-45, 45)
   };
   int steering_speed[5][5][4] = { //[now][next][id]
     {{ 0, 0, 0, 0},{-1, 1, 1,-1},{ 1,-1,-1, 1},{ 2, 2,-2,-2},{ 1, 1,-1,-1}},
@@ -35,6 +42,15 @@ class MotorController
     {{-1,-1, 1, 1},{-2, 0, 2, 0},{ 0,-2, 0, 2},{ 1, 1,-1,-1},{ 0, 0, 0, 0}}
   };
   double steering_angle_now[4];    // [rad]
+  
+  double wheel_rotate_dir[5][4] = {
+    { 1.0, 1.0,  1.0,  1.0}, // F, B
+    { 1.0, 1.0,  1.0,  1.0}, // FL, BR
+    { 1.0, 1.0,  1.0,  1.0}, // BL, FR
+    {-1.0, 1.0, -1.0,  1.0}, // L, R
+    {-1.0, 1.0,  1.0, -1.0}  // RotL, RotR
+  };
+  double wheel_sign[4] = {-1.0, 1.0, 1.0, -1.0};
   
   ICSData ics_data;
   PiezoSonic piezo[4];
@@ -46,9 +62,9 @@ class MotorController
   double piezo_goal[4];
   bool first_steering = true;
   //double Kp[4] = {8600, 2000, 7200, 9600};//{5400, 1500, 4500, 6000};  // 1800, 1000, 1500, 1800 -> 1800,1000,1500,6000
-  double Kp[4] = {4000, 4000, 4000, 4000}; // 3000
-  double Ki[4] = {1000, 5, 5, 5}; // 3500
-  double Kd[4] = {0, 10, 10, 10};
+  double Kp[4] = {3000, 4000, 4000, 4000}; // 3000
+  double Ki[4] = {3500, 5, 5, 5}; // 3500
+  double Kd[4] = {0, 0, 0, 0};
   double e_i[4];
   double e_d[4];
   TrapezoidalPosControl trape[4];
@@ -78,10 +94,12 @@ class MotorController
   sensor_msgs::JointState wheel_state_last;
   bool first_joint_states_callback = true;
   
-  void drive_servo(int servo_id, int angle, int speed);
+  void drive_servo(int servo_id, double angle, int speed);
   void drive_piezo(int piezo_id, int speed);
   
+  // for servo
   double get_servo_angle(int servo_id);
+  int change_to_servo_value(int servo_id, double angle);
 
   int sign(int val) { return (val>0)-(val<0); }
   double sign(double val) { return (double)((val>0.0)-(val<0.0)); }

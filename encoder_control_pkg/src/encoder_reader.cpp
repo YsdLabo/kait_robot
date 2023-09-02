@@ -3,7 +3,7 @@
 #include<std_msgs/Int32MultiArray.h>
 
 #define  MOTOR_NUMS  4
-#define  VELOCITY_COUNTS  10
+#define  VELOCITY_COUNTS  5
 
 std_msgs::Int32MultiArray  enc_data;
 sensor_msgs::JointState joint_state;
@@ -76,7 +76,7 @@ void timerCallback(const ros::TimerEvent& e)
 		for(int j=0;j<VELOCITY_COUNTS;j++) joint_state.velocity[i] += velocity[i][j];
 		joint_state.velocity[i] /= (double)VELOCITY_COUNTS;
 		last_angle[i] = current_angle[i];
-	}	
+	}
 	num++;
 	if(num == VELOCITY_COUNTS) num = 0;
 

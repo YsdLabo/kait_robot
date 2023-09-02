@@ -66,12 +66,12 @@ namespace driving_controller_ns
     }
     else {
       block = true;
-    NODELET_INFO("[steering manager] start : %d : %d : %lf : %d", driving_state, steering_dir, driving_speed, stop_flag);
+//    NODELET_INFO("[steering manager] start : %d : %d : %lf : %d", driving_state, steering_dir, driving_speed, stop_flag);
       // Steering
       if(driving_state == 1)
       {
         if(motor.steering(steering_dir)) { // && motor.check_all_piezos_stop()){// && motor.check_all_servos_stop()) {
-        printf("[steering manager] end steering\n");
+//        printf("[steering manager] end steering\n");
           driving_state = -1;  // to idling
           stop_flag = true;
         }
@@ -96,7 +96,7 @@ namespace driving_controller_ns
       //if(driving_state != 1) {
       //  motor.steering_stop();
       //}
-    NODELET_INFO("[steering manager] end   : %d : %d : %lf : %d", driving_state, steering_dir, driving_speed, stop_flag);
+//    NODELET_INFO("[steering manager] end   : %d : %d : %lf : %d", driving_state, steering_dir, driving_speed, stop_flag);
       block = false;
     }
   }

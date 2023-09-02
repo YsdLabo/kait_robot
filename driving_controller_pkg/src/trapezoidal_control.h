@@ -52,7 +52,7 @@ public:
 		double t = t_c - t_s;
 		if(t <= t1) return sign * acc_max * t;
 		else if(t <= t2) return sign * vel_max;
-		else if(t <= t3) return sign * (vel_max + dcc_max * (t-t2));
+		else if(t <= t3) return sign * (acc_max * t1 + dcc_max * (t-t2));
 		else return 0;
 	}
 	bool Finished() { return finished; }
@@ -88,12 +88,12 @@ public:
 	double Next(double t_c)
 	{
 		if(first) {
-			t_s = t_c;
-			t_o = 0.0;
+			t_s = t_c;  // start time
+			t_o = 0.0;  // last time
 			first = false;
 		}
 
-		double t = t_c - t_s;
+		double t = t_c - t_s;  // past time
 		
 		if(t <= t1) {
 			pos_m += sign*acc_max*(t+t_o)*(t-t_o)/2.0;

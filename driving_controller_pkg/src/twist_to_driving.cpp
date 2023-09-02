@@ -312,13 +312,13 @@ private:
 				//init_flag = 0;
 			//}
 			//ros::Duration(0.1).sleep();
-			NODELET_INFO("[stm] Steering : entry_end (%d)", (int)steering_dir_now);
+//			NODELET_INFO("[stm] Steering : entry_end (%d)", (int)steering_dir_now);
 			
 		}
 		else if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
-			NODELET_INFO("[stm] Steering : motors_stopped(%d)", (int)steering_dir_now);
+//			NODELET_INFO("[stm] Steering : motors_stopped(%d)", (int)steering_dir_now);
 				action = E_ACTION::EXIT;
 			}
 		}
@@ -361,7 +361,7 @@ private:
 		if(action == E_ACTION::DO) {
 			if(check_all_motors_stopped()) 
 			{
-			NODELET_INFO("[stm] Stopping : check all motors stopped.");
+//			NODELET_INFO("[stm] Stopping : check all motors stopped.");
 				main_state = E_STATE::STEERING;
 				action = E_ACTION::EXIT;
 			}

@@ -1,7 +1,7 @@
 #include "motor_controller.h"
 
-#define DEFAULT_MAX_STEERING_ACC  1.0    // rad/s^2
-#define DEFAULT_MAX_STEERING_VEL  1.0    // rad/s
+#define DEFAULT_MAX_STEERING_ACC  5.0    // rad/s^2
+#define DEFAULT_MAX_STEERING_VEL  2.0    // rad/s
 
 #define DEFAULT_MAX_ACC  0.3    // m/s^2
 #define DEFAULT_MAX_DCC -0.3    // m/s^2
@@ -28,28 +28,28 @@ MotorController::MotorController()
   piezo[0].config(0x08, 0x2905);  // CCW High Frequency 41.5Hz
   piezo[0].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
   piezo[0].config(0x12, 0);  // Kp
-  piezo[0].config(0x14, 400);  // Ki
+  piezo[0].config(0x14, 3900);  // Ki
   
   piezo[1].config(0x00, 0x2800);  // CW High Frequency 40.0Hz
   piezo[1].config(0x02, 0x2C00);  // CW Low Frequency 44.0Hz
   piezo[1].config(0x08, 0x2800);  // CCW High Frequency 40.0Hz
   piezo[1].config(0x0A, 0x2C00);  // CCW Low Frequency 44.0Hz
   piezo[1].config(0x12, 0);  // Kp
-  piezo[1].config(0x14, 390);  // Ki
+  piezo[1].config(0x14, 3900);  // Ki
 
   piezo[2].config(0x00, 0x2900);  // CW High Frequency 41.0Hz
   piezo[2].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
   piezo[2].config(0x08, 0x2900);  // CCW High Frequency 41.0Hz
   piezo[2].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
   piezo[2].config(0x12, 0);  // Kp
-  piezo[2].config(0x14, 310);  // Ki
+  piezo[2].config(0x14, 3100);  // Ki
 
   piezo[3].config(0x00, 0x2900);  // CW High Frequency 41.0Hz
   piezo[3].config(0x02, 0x2D07);  // CW Low Frequency 45.7Hz
   piezo[3].config(0x08, 0x2900);  // CCW High Frequency 41.0Hz
   piezo[3].config(0x0A, 0x2D07);  // CCW Low Frequency 45.7Hz
   piezo[3].config(0x12, 0);  // Kp
-  piezo[3].config(0x14, 310);  // Ki
+  piezo[3].config(0x14, 3100);  // Ki
 
   for(int i=0;i<4;i++) {
     piezo[i].config(0x04, 0x2400);  // CW Phase 36.0
@@ -67,9 +67,9 @@ MotorController::MotorController()
   
   for(int i=0;i<4;i++)
   {
-    trape[i].SetAccMax(max_steering_acc);
-    trape[i].SetDccMax(max_steering_acc);
-    trape[i].SetVelMax(max_steering_vel);
+    trape[i].SetAccMax(max_steering_acc); // [rad/s^2]
+    trape[i].SetDccMax(max_steering_acc); // [rad/s^2]
+    trape[i].SetVelMax(max_steering_vel); // [rad/s]
   }
 
   speed_d = 0;
@@ -100,9 +100,10 @@ MotorController::~MotorController()
   }
 }
   
-void MotorController::drive_servo(int servo_id, int pulse, int speed)
+void MotorController::drive_servo(int servo_id, double angle, int speed)
 {
   ics_set_speed(&ics_data, servo_id+1, std::abs(speed));
+  int pulse = change_to_servo_value(servo_id, angle);
   if(pulse > 10462) pulse = 10462;
   if(pulse < 4537) pulse = 4537;
   ics_pos(&ics_data, servo_id+1, pulse);
@@ -113,7 +114,7 @@ void MotorController::drive_piezo(int piezo_id, int speed)
   int speed_m = speed;
   if(speed > 4000) speed_m = 4000;
   if(speed < -4000) speed_m = -4000;
-  //if(std::abs(speed) < 100) speed_m = 0;
+  if(std::abs(speed) < 50) speed_m = 0;
 //  ROS_INFO("speed_m[%d] : %d", piezo_id, speed);
   piezo[piezo_id].move(speed_m);
 //  if(wheel_state.velocity.size() > 0)
@@ -123,7 +124,6 @@ void MotorController::drive_piezo(int piezo_id, int speed)
 bool MotorController::check_servo_stop(int servo_id)
 {
   int cur_value = ics_get_position(&ics_data, servo_id+1);
-//  printf("%d : %d    %d\n", servo_id+1, cur_pos, abs(cur_pos - steering_value[steer_next][servo_id]));
   if(std::abs(cur_value - steering_value[steer_next][servo_id]) < 60) return true;
   return false;
 }
@@ -136,6 +136,18 @@ bool MotorController::check_all_servos_stop()
   }
   if(cnt == 4) return true;
   return false;
+}
+
+double MotorController::get_servo_angle(int servo_id)
+{
+  int servo = -1;
+  while((servo = ics_get_position(&ics_data, servo_id+1)) < 0);
+  return (servo - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;   // -2.356rad～2.356rad
+}
+
+int MotorController::change_to_servo_value(int servo_id, double angle_rad)
+{
+  return (int)(angle_rad * 180.0 / M_PI * 4000.0 / 135.0) + 7500;
 }
 
 void MotorController::set_piezo_goal_position(int piezo_id, int amount)
@@ -213,8 +225,10 @@ bool MotorController::steering(int steer_next_state)
     for(int i=0;i<4;i++) {
       pos_p_m[i] = wheel_state.position[i]; // [rad]　車輪軸の現在角度
       pos_s_m[i] = get_servo_angle(i); // [rad]  操舵軸の現在角度
-      double pos_s_d = (steering_value[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の目標角度
-      trape[i].Init(pos_s_d, pos_s_m[i]);    // 台形速度則の初期化
+      //double pos_s_d = (steering_value[steer_next][i] - 7500) / 4000.0 * 135.0 / 180.0 * M_PI; // [rad]  操舵軸の目標角度
+      double pos_s_d = steering_angle[steer_next][i]; // [rad]  操舵軸の目標角度
+      trape[i].Init(pos_s_d, pos_s_m[i]);    // 台形速度則の初期化[rad]
+      printf("%d : %lf - %lf\n", i, pos_s_d, pos_s_m[i]);
       pos_s_o[i] = pos_s_m[i];
       e_i[i] = 0.0;
       e_d[i] = 0.0;
@@ -245,17 +259,18 @@ bool MotorController::steering(int steer_next_state)
       //drive_piezo(i, (int)(Kp[i]*err) + sign(err*100)*200);  // modify
       double dt = (time_cur - time_last).toSec();
       e_d[i] = err - e_d[i];
-      double output = Kp[i]*err + Ki[i]*e_i[i]*dt - Kd[i]*e_d[i]/dt;
+//      double output = Kp[i]*err + Ki[i]*e_i[i]*dt - Kd[i]*e_d[i]/dt;
+      double output = wheel_sign[i] * trape[i].GetVel(t_c) / 0.0052 + 3000.0*err;
       drive_piezo(i, (int)(output));
       e_d[i] = err;
       // 操舵軸駆動
-      int pos_s_d = (int)(pos_s_m[i] * 180.0 / M_PI * 4000.0 / 135.0) + 7500;    // rad to digital
-      drive_servo(i, pos_s_d, 100);
+      //int pos_s_d = (int)(pos_s_m[i] * 180.0 / M_PI * 4000.0 / 135.0) + 7500;    // rad to digital
+      drive_servo(i, pos_s_m[i], 100);
       // パブリッシュ
-      msg.data = trape[i].GetVel(t_c) / 0.052 / 1000.0; //pos_p_m[i]; 
-      pub[i].publish(msg);
-      msg.data = output/1000.0;//pos_p; 
-      pub[i+4].publish(msg);
+      msg.data = pos_p_m[i]; //wheel_sign[i] * trape[i].GetVel(t_c);  
+      pub[i].publish(msg); // servo
+      msg.data = pos_p;// wheel_state.velocity[i]; //output * 0.052;
+      pub[i+4].publish(msg); // piezo
     }
     
     // update odom
@@ -313,19 +328,11 @@ void MotorController::running(double speed_ms)
     if(sgn * (speed_ms - speed_d) < 0) speed_d = speed_ms;
   }
 
-  double rotate_dir[][4] = {
-    { 1.0, 1.0,  1.0,  1.0}, // F, B
-    { 1.0, 1.0,  1.0,  1.0}, // FL, BR
-    { 1.0, 1.0,  1.0,  1.0}, // BL, FR
-    {-1.0, 1.0, -1.0,  1.0}, // L, R
-    {-1.0, 1.0,  1.0, -1.0}  // RotL, RotR
-  };
-  
   std_msgs::Float64 msg;
   // F,B,FL,FR  0:+ 1:+ 2:+ 3:+
   for(int i=0;i<4;i++) {
-    drive_piezo(i, rotate_dir[steer_now][i] * speed_d * mps_to_digit);
-    msg.data = rotate_dir[steer_now][i] * speed_d * mps_to_digit;
+    drive_piezo(i, wheel_rotate_dir[steer_now][i] * speed_d * mps_to_digit);
+    msg.data = wheel_rotate_dir[steer_now][i] * speed_d * mps_to_digit;
     pub[0].publish(msg);
   }
 
@@ -354,12 +361,6 @@ void MotorController::steering_stop()
   first_steering = true;
 }
 
-double MotorController::get_servo_angle(int servo_id)
-{
-  int servo = -1;
-  while((servo = ics_get_position(&ics_data, servo_id+1)) < 0);
-  return (servo - 7500) / 4000.0 * 135.0 / 180.0 * M_PI;   // -2.356rad～2.356rad　
-}
 
 }
 
