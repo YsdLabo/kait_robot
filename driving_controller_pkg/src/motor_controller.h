@@ -57,7 +57,7 @@ class MotorController
   double pos_s_o[4];
   
   // for running
-  static constexpr double  mps_to_digit = 20.0/0.0026;   // modify  1m/s = 20rad/s = 20/0.0026 digit/s = 7692
+  static constexpr double  mps_to_digit = 20.0/0.0052;   // modify  1m/s = 20rad/s = 20/0.0052 digit/s = 7692
   double speed_d;
   double max_acc;
   double max_dcc;
