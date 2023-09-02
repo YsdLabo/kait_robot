@@ -252,9 +252,9 @@ bool MotorController::steering(int steer_next_state)
       int pos_s_d = (int)(pos_s_m[i] * 180.0 / M_PI * 4000.0 / 135.0) + 7500;    // rad to digital
       drive_servo(i, pos_s_d, 100);
       // パブリッシュ
-      msg.data = pos_p_m[i]; //trape[i].GetVel(t_c) / 0.026 / 1000.0; 
+      msg.data = trape[i].GetVel(t_c) / 0.052 / 1000.0; //pos_p_m[i]; 
       pub[i].publish(msg);
-      msg.data = pos_p; //output/1000.0;
+      msg.data = output/1000.0;//pos_p; 
       pub[i+4].publish(msg);
     }
     
