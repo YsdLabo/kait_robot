@@ -3,9 +3,9 @@
 #define DEFAULT_MAX_STEERING_ACC  5.0    // rad/s^2
 #define DEFAULT_MAX_STEERING_VEL  2.0    // rad/s
 
-#define DEFAULT_MAX_ACC  0.3    // m/s^2
-#define DEFAULT_MAX_DCC -0.3    // m/s^2
-#define DEFAULT_MAX_VEL  0.1    // m/s
+#define DEFAULT_MAX_ACC  0.5    // m/s^2
+#define DEFAULT_MAX_DCC -0.5    // m/s^2
+#define DEFAULT_MAX_VEL  0.5    // m/s
 
 namespace driving_controller_ns
 {
@@ -260,7 +260,7 @@ bool MotorController::steering(int steer_next_state)
       double dt = (time_cur - time_last).toSec();
       e_d[i] = err - e_d[i];
 //      double output = Kp[i]*err + Ki[i]*e_i[i]*dt - Kd[i]*e_d[i]/dt;
-      double output = wheel_sign[i] * trape[i].GetVel(t_c) / 0.0052 + 3000.0*err;
+      double output = wheel_sign[i] * trape[i].GetVel(t_c) / 0.0052 + 3000.0*err;   // 台形速度制御＋位置比例制御
       drive_piezo(i, (int)(output));
       e_d[i] = err;
       // 操舵軸駆動

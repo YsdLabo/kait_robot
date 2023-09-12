@@ -1,0 +1,13 @@
+<launch>
+  <arg name="velodyne_angle" default="90"/>
+  <include file="$(find kait_robot)/launch/kait_description.launch">
+    <arg name="velodyne_angle" value="$(arg velodyne_angle)"/>
+  </include>
+
+  <include file="$(find kkrt_lidar_pkg)/launch/lidars.launch"/>
+  <node name="pcl_velodyne_node" pkg="pcl_measurement_pkg" type="pcl_velodyne_test_node" output="screen">
+    <remap from="/cloud_in" to="/velodyne_scan"/>
+  </node>
+
+  <node name="rviz" pkg="rviz" type="rviz" required="true" args="-f laserscan_velodyne" />
+</launch>
