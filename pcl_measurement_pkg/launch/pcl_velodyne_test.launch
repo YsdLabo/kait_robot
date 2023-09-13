@@ -1,4 +1,6 @@
 <launch>
+  <param name="limit" value="0.3"/>
+
   <arg name="velodyne_angle" default="90"/>
   <include file="$(find kait_robot)/launch/kait_description.launch">
     <arg name="velodyne_angle" value="$(arg velodyne_angle)"/>
@@ -9,5 +11,5 @@
     <remap from="/cloud_in" to="/velodyne_scan"/>
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" required="true" args="-f laserscan_velodyne" />
+  <node name="rviz" pkg="rviz" type="rviz" required="true" args="-f base_link -d $(find pcl_measurement_pkg)/launch/pcl.rviz" />
 </launch>

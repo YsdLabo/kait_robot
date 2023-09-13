@@ -15,6 +15,8 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_stored{new pcl::PointCloud<pcl::Point
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_mid{new pcl::PointCloud<pcl::PointXYZI>};
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered{new pcl::PointCloud<pcl::PointXYZI>};
 
+double limit = 0.05;
+
 void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
 	//convert
@@ -26,11 +28,11 @@ void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 	cloud_filtered->clear();
 	pass.setInputCloud(cloud_now);
 	pass.setFilterFieldName("y");
-	pass.setFilterLimits(-0.05, 0.05);
+	pass.setFilterLimits(-limit, limit);
 	pass.filter(*cloud_mid);
 	pass.setInputCloud(cloud_mid);
 	pass.setFilterFieldName("z");
-	pass.setFilterLimits(-0.05, 0.05);
+	pass.setFilterLimits(-limit, limit);
 	pass.filter(*cloud_filtered);
 	
 	// accumulation
@@ -43,7 +45,7 @@ void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 	}
 	ave /= (double)cloud_stored->size();
 	
-	ROS_INFO("size: %d  ave: %lf", cloud_stored->size(), ave);
+	//ROS_INFO("size: %d  ave: %lf", cloud_stored->size(), ave);
 	
 	// Publication
 	sensor_msgs::PointCloud2 pcl_out;
@@ -58,6 +60,9 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh;
 	ros::Subscriber sub = nh.subscribe("cloud_in", 1, &point_cloud_callback);
 	pub = nh.advertise<sensor_msgs::PointCloud2>("cloud_out", 1);
+	
+	ros::param::param<double>("limit", limit, 0.1);
+	limit /= 2.0;
 	
 	ros::spin();
 	
