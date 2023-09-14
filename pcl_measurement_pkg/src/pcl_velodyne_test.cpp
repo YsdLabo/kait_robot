@@ -16,6 +16,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_mid{new pcl::PointCloud<pcl::PointXYZ
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered{new pcl::PointCloud<pcl::PointXYZI>};
 
 double limit = 0.05;
+int count = 1;
 
 void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
@@ -35,17 +36,44 @@ void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 	pass.setFilterLimits(-limit, limit);
 	pass.filter(*cloud_filtered);
 	
-	// accumulation
-	*cloud_stored += *cloud_filtered;
-	
-	double ave = 0;
-	for(int i=0;i<cloud_stored->size(); i++)
+	if(cloud_filtered->size() > 0)
 	{
-		ave += cloud_stored->points[i].x;
+		// 累積
+		*cloud_stored += *cloud_filtered;
+
+		if(cloud_stored->size() % 100 > count)
+		{
+			// 平均
+			double ave = 0;
+			for(int i=0;i<cloud_stored->size(); i++)
+			{
+				ave += cloud_stored->points[i].x;
+			}
+			ave /= (double)cloud_stored->size();
+
+			// 標準偏差
+			double sd = 0.0;
+			for(int i=0; i < cloud_stored->size(); i++)
+			{
+				sd += (cloud_stored->points[i].x - ave)*(cloud_stored->points[i].x);
+			}
+			sd /= (double)cloud_stored->size();
+			sd = std:sqrt(sd);
+			
+			// 最大・最小
+			double min = 9999, max = -9999;
+			for(int i=0; i < cloud_stored->size(); i++)
+			{
+				if(min > cloud_stored->points[i].x) min = cloud_stored->points[i].x;
+				if(max < cloud_stored->points[i].x ) max = cloud_stored->points[i].x;
+			}
+
+			ROS_INFO("size: %d  ave: %lf  sd: %lf  min: %lf  max: %lf", cloud_stored->size(), ave, sd, min, max);
+
+			count = cloud_stored->size() % 100;
+		}
 	}
-	ave /= (double)cloud_stored->size();
 	
-	//ROS_INFO("size: %d  ave: %lf", cloud_stored->size(), ave);
 	
 	// Publication
 	sensor_msgs::PointCloud2 pcl_out;
