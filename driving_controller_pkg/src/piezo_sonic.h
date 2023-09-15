@@ -34,6 +34,7 @@ class PiezoSonic
 
 public:
 	PiezoSonic() {};
+	~PiezoSonic();
 
 	void open(int _device_id);
 	void close();

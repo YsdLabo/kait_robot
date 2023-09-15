@@ -1,5 +1,10 @@
 #include "piezo_sonic.h"
 
+PiezoSonic::~PiezoSonic()
+{
+	close();
+}
+
 void PiezoSonic::open(int _device_id)
 {
 	id = _device_id;
@@ -20,6 +25,7 @@ void PiezoSonic::open(int _device_id)
 	//printf("[PiezoSonic] number of usb devices = %d\n", dev_num);
 
 	// PiezoSonicドライバの検索
+	int res;
 	if(dev_list != NULL)
 	{
 		//libusb_device_handle  *dummy_handle = NULL;
@@ -32,43 +38,45 @@ void PiezoSonic::open(int _device_id)
 				//printf("[PiezoSonic] find device %d [%04x:%04x]\n", i, desc.idVendor, desc.idProduct);
 
 				handle = NULL;
-				if(libusb_open(dev_list[i], &handle) >= 0) {
-					if(libusb_kernel_driver_active(handle, 0) != 0) {    // active:1  deactive:0
-						libusb_detach_kernel_driver(handle, 0);
-						printf("[PiezoSonic] libusb_kernel_driver_active\n");
-					}
-			
-					// Read DIP #1/#2
-					unsigned char x = (unsigned char)(read(0x2A) & 0xF0);
-					int tmp_id;
-					if(x == 0) tmp_id = 0;
-					else if(x == 0x80) tmp_id = 1;
-					else if(x == 0x40) tmp_id = 2;
-					else if(x == 0xC0) tmp_id = 3;
-					else if(x == 0x20) tmp_id = 4;
-					else if(x == 0xA0) tmp_id = 5;
-					else if(x == 0x60) tmp_id = 6;
-					else if(x == 0xE0) tmp_id = 7;
-					//if(tmp_id >= 0) printf("[PiezoSonic] find piezo sonic motor No : %d\n", tmp_id + 1);
-
-					if(id == tmp_id) {
-					 	// USB デバイスの初期化(configration)
-						//libusb_set_configuration(handle, 1); 
-				
-						// インタフェースの要求(デバイスの使用権を要求)
-						libusb_claim_interface(handle, 0);
-			
-						if(id >= 0) printf("[PiezoSonic] open piezo sonic motor No : %d\n", id + 1);
-						
-						libusb_free_device_list(dev_list, 1);
-					
-						return;
-					}
-					libusb_close(handle);
+				if(libusb_open(dev_list[i], &handle) != 0) {
+					printf("[PiezoSonic] unable to open the USB device\n");
+					continue;
 				}
-				else printf("open failed\n");
+				if(libusb_kernel_driver_active(handle, 0) != 0) {    // active:1  deactive:0
+					if(libusb_detach_kernel_driver(handle, 0) != 0) continue;
+					printf("[PiezoSonic] Detaching the kernel driver.\n");
+				}
+				
+				// インタフェースの要求(デバイスの使用権を要求)
+				if((res = libusb_claim_interface(handle, 0)) != 0) {    // Interface Number 0
+					//printf("[PiezoSonic] Failed to claim interface : %d\n", res);  // -6:BUSY
+					continue;
+				}
+				
+				// Read DIP #1/#2
+				unsigned char x = (unsigned char)(read(0x2A) & 0xF0);
+				int tmp_id;
+				if(x == 0) tmp_id = 0;
+				else if(x == 0x80) tmp_id = 1;
+				else if(x == 0x40) tmp_id = 2;
+				else if(x == 0xC0) tmp_id = 3;
+				else if(x == 0x20) tmp_id = 4;
+				else if(x == 0xA0) tmp_id = 5;
+				else if(x == 0x60) tmp_id = 6;
+				else if(x == 0xE0) tmp_id = 7;
+				//if(tmp_id >= 0) printf("[PiezoSonic] find piezo sonic motor No : %d\n", tmp_id + 1);
+				
+				if(id == tmp_id) {
+					printf("[PiezoSonic] open piezo sonic motor No : %d\n", tmp_id + 1);
+					libusb_free_device_list(dev_list, 1);
+					return;
+				}
+				//printf("[PiezoSonic] open failed : %d\n", tmp_id + 1);
+				libusb_close(handle);
 			}
 		}
+		libusb_free_device_list(dev_list, 1);
+		libusb_exit(context);
 		handle = NULL;
 	}
 }
@@ -79,9 +87,8 @@ void PiezoSonic::close()
 		libusb_release_interface(handle, 0);   // libusb_claim_interfaceで要求したインタフェースを解放する。デバイスハンドルを閉じる前に解放する必要がある
 		libusb_close(handle);
 		handle = NULL;
-		printf("[PiezoSonic] close piezo sonic motor : %d\n", id + 1); 
 		libusb_exit(context); 
-		printf("[PiezoSonic] exit\n");
+		printf("[PiezoSonic] close piezo sonic motor : %d\n", id + 1); 
 	}
 }
 
