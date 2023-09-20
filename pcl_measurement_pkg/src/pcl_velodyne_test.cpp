@@ -17,6 +17,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered{new pcl::PointCloud<pcl::Poi
 
 double limit = 0.05;
 int count = -1;
+int times = 0;
 
 void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
@@ -40,6 +41,7 @@ void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 	{
 		// 累積
 		*cloud_stored += *cloud_filtered;
+		times ++;
 
 		if((int)cloud_stored->size() / 500 > count)
 		{
@@ -47,7 +49,7 @@ void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 			double ave = 0;
 			for(int i=0;i<cloud_stored->size(); i++)
 			{
-				ave += cloud_stored->points[i].x;
+				ave += cloud_stored->points[i].x + 0.4505;    // 床から天井までの高さ
 			}
 			ave /= (double)cloud_stored->size();
 
@@ -69,7 +71,7 @@ void point_cloud_callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
 			}
 
 			//ROS_INFO("size: %d  ave: %lf  sd: %lf  min: %lf  max: %lf", (int)cloud_stored->size(), ave, sd, min, max);
-			printf("%d,%lf,%lf,%lf,%lf\n", (int)cloud_stored->size(), ave, sd, min, max);
+			printf("%d,%lf,%lf,%lf,%lf,%d\n", (int)cloud_stored->size(), ave, sd, min, max, times);
 
 			count = (int)cloud_stored->size() / 500;
 		}
@@ -91,7 +93,7 @@ int main(int argc, char** argv)
 	
 	ros::param::param<double>("limit", limit, 0.1);
 	limit /= 2.0;
-	printf("size,ave,sd,min,max\n");
+	printf("size,ave,sd,min,max,times\n");
 	
 	ros::spin();
 	

@@ -11,5 +11,5 @@
     <remap from="/cloud_in" to="/velodyne_scan"/>
   </node>
 
-  <node name="rviz" pkg="rviz" type="rviz" required="true" args="-f base_link -d $(find pcl_measurement_pkg)/launch/pcl.rviz" />
+  <!--node name="rviz" pkg="rviz" type="rviz" required="true" args="-f base_link -d $(find pcl_measurement_pkg)/launch/pcl.rviz" /-->
 </launch>

@@ -44,12 +44,13 @@ void PiezoSonic::open(int _device_id)
 				}
 				if(libusb_kernel_driver_active(handle, 0) != 0) {    // active:1  deactive:0
 					if(libusb_detach_kernel_driver(handle, 0) != 0) continue;
-					printf("[PiezoSonic] Detaching the kernel driver.\n");
+					//printf("[PiezoSonic] Detaching the kernel driver.\n");
 				}
 				
 				// インタフェースの要求(デバイスの使用権を要求)
 				if((res = libusb_claim_interface(handle, 0)) != 0) {    // Interface Number 0
-					//printf("[PiezoSonic] Failed to claim interface : %d\n", res);  // -6:BUSY
+					//printf("[PiezoSonic] Failed to claim interface : %d : %d\n", id+1, res);  // -6:BUSY
+					libusb_close(handle);
 					continue;
 				}
 				
@@ -71,7 +72,9 @@ void PiezoSonic::open(int _device_id)
 					libusb_free_device_list(dev_list, 1);
 					return;
 				}
-				//printf("[PiezoSonic] open failed : %d\n", tmp_id + 1);
+				//printf("[PiezoSonic] open failed : %d != %d\n", id+1, tmp_id + 1);
+				libusb_release_interface(handle, 0);
+				//libusb_attach_kernel_driver(handle, 0);
 				libusb_close(handle);
 			}
 		}
@@ -85,6 +88,7 @@ void PiezoSonic::close()
 {
 	if(handle != NULL) {
 		libusb_release_interface(handle, 0);   // libusb_claim_interfaceで要求したインタフェースを解放する。デバイスハンドルを閉じる前に解放する必要がある
+		libusb_attach_kernel_driver(handle, 0);
 		libusb_close(handle);
 		handle = NULL;
 		libusb_exit(context); 
