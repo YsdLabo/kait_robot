@@ -11,16 +11,16 @@ void PiezoSonic::open(int _device_id)
 	inversion = false;
 	
 	// libusbの初期化
-	int ret = libusb_init(&context); 
-	if (ret < 0) { 
-		printf("[PiezoSonic] Failed to initialize libusb\n"); 
-		exit(-1); 
+	int ret = libusb_init(&context);
+	if (ret < 0) {
+		printf("[PiezoSonic] Failed to initialize libusb\n");
+		exit(-1);
 	}
 	printf("[PiezoSonic] libusb initialized.\n");    
 
-	// list up usb devices    
+	// list up usb devices
 	dev_num = libusb_get_device_list(context, &dev_list);
-    
+
 	// count the number of usb devices
 	//printf("[PiezoSonic] number of usb devices = %d\n", dev_num);
 
